@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/benchmark-client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./benchmark.db"
+}
+
+model BenchmarkSeries {
+  id            String   @id @default(cuid())
+  symbol        String
+  source        String
+  benchmarkType String
+  createdAt     DateTime @default(now())
+  dataPoints    BenchmarkDataPoint[]
+  syncJobs      SyncJob[]
+  @@unique([symbol, source, benchmarkType])
+}
+
+model BenchmarkDataPoint {
+  id       String          @id @default(cuid())
+  seriesId String
+  series   BenchmarkSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  date     DateTime
+  value    Float
+  @@unique([seriesId, date])
+}
+
+model SyncJob {
+  id         String          @id @default(cuid())
+  seriesId   String
+  series     BenchmarkSeries @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+  lastSyncAt DateTime?
+  status     String          @default("PENDING")
+  error      String?
+}

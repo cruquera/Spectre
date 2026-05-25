@@ -1,0 +1,29 @@
+{
+  "name": "@spectre/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./shared/*": "./dist/shared/*",
+    "./modules/*": "./dist/modules/*"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-sql.mjs"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^6.1.0",
+    "@prisma/client": "^6.1.0",
+    "@spectre/data-contracts": "*",
+    "argon2": "^0.41.1",
+    "better-sqlite3-multiple-ciphers": "^11.7.0",
+    "electron": "^33.2.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
+    "typescript": "^5.7.2"
+  }
+}

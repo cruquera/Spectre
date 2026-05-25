@@ -1,0 +1,2 @@
+-- Prisma migrate: same as backend/shared/database/sql/user-init.sql
+-- Run via app runtime migrations or: npm run prisma:migrate:user

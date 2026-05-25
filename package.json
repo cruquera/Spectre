@@ -1,0 +1,41 @@
+{
+  "name": "spectre",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Desktop offline-first investment management",
+  "workspaces": [
+    "apps/*",
+    "backend",
+    "data-contracts"
+  ],
+  "scripts": {
+    "postinstall": "npm run prisma:generate",
+    "prisma:generate": "prisma generate --schema=prisma/user-schema.prisma && prisma generate --schema=prisma/benchmark-schema.prisma",
+    "prisma:migrate:user": "prisma migrate dev --schema=prisma/user-schema.prisma",
+    "build:contracts": "npm run build -w @spectre/data-contracts",
+    "build:backend": "npm run build -w @spectre/backend",
+    "build:preload": "npm run build -w @spectre/electron-preload",
+    "build:angular": "npm run build -w @spectre/angular-app",
+    "build": "npm run build:contracts && npm run build:backend && npm run build:preload && npm run build:angular",
+    "start": "npm run build && npm run start -w @spectre/electron-main",
+    "start:dev": "concurrently -k \"npm run start:angular -w @spectre/angular-app\" \"cross-env SPECTRE_DEV=1 npm run start -w @spectre/electron-main\"",
+    "test": "jest",
+    "test:unit": "jest --selectProjects unit",
+    "test:integration": "jest --selectProjects integration",
+    "test:e2e": "playwright test",
+    "lint": "eslint . --ext .ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.10.0",
+    "concurrently": "^9.1.0",
+    "jest": "^29.7.0",
+    "prisma": "^6.1.0",
+    "ts-jest": "^29.2.5",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

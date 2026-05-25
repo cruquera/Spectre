@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.angular/
+coverage/
+*.db
+*.db-journal
+.salt
+.env
+.env.local
+playwright-report/
+test-results/
+*.log
+.DS_Store
+Thumbs.db
+spectre-data/

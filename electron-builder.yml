@@ -1,0 +1,10 @@
+appId: com.spectre.app
+productName: Spectre
+directories:
+  output: dist/release
+files:
+  - dist/**/*
+  - package.json
+win:
+  target: nsis
+  icon: apps/angular-app/public/favicon.ico
