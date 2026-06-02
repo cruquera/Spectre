@@ -11,7 +11,7 @@
     "@spectre/data-contracts": "*"
   },
   "devDependencies": {
-    "electron": "^33.2.0",
+    "electron": "^42.3.0",
     "typescript": "^5.7.2"
   }
 }

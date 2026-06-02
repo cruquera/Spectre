@@ -1,4 +1,4 @@
-import type Database from 'better-sqlite3-multiple-ciphers';
+import Database from 'better-sqlite3';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,19 +23,27 @@ function loadSql(filename: string): string {
 
 function tableExists(db: Database.Database, table: string): boolean {
   const row = db
-    .prepare(
-      `SELECT name FROM sqlite_master WHERE type='table' AND name=?`,
-    )
+    .prepare(`SELECT name FROM sqlite_master WHERE type='table' AND name=?`)
     .get(table) as { name: string } | undefined;
   return !!row;
 }
 
-export function runUserMigrations(db: Database.Database): void {
-  if (tableExists(db, 'UserProfile')) return;
-  db.exec(loadSql('user-init.sql'));
+export function runUserMigrations(dbPath: string): void {
+  const db = new Database(dbPath);
+  try {
+    if (tableExists(db, 'UserProfile')) return;
+    db.exec(loadSql('user-init.sql'));
+  } finally {
+    db.close();
+  }
 }
 
-export function runBenchmarkMigrations(db: Database.Database): void {
-  if (tableExists(db, 'BenchmarkSeries')) return;
-  db.exec(loadSql('benchmark-init.sql'));
+export function runBenchmarkMigrations(dbPath: string): void {
+  const db = new Database(dbPath);
+  try {
+    if (tableExists(db, 'BenchmarkSeries')) return;
+    db.exec(loadSql('benchmark-init.sql'));
+  } finally {
+    db.close();
+  }
 }

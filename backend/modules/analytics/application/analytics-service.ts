@@ -13,7 +13,7 @@ export class AnalyticsService {
   async portfolioEvolution(portfolioId: string) {
     const history = await this.patrimony.listHistory(portfolioId);
     if (!history.ok) return history;
-    const series = history.value.map((s) => ({
+    const series = history.value.map((s: { capturedAt: Date; totalValue: number; currency: string }) => ({
       date: s.capturedAt.toISOString(),
       value: s.totalValue,
       currency: s.currency,

@@ -1,8 +1,10 @@
+import { JsonPipe } from '@angular/common';
 import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'sp-crud-list',
   standalone: true,
+  imports: [JsonPipe],
   template: `
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-2xl font-bold">{{ title() }}</h2>

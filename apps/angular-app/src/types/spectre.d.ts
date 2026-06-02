@@ -29,7 +29,11 @@ export interface SpectreApi {
   };
   benchmark: { sync(data: unknown): Promise<IpcResult<unknown>>; listCached(data: unknown): Promise<IpcResult<unknown>> };
   marketData: { createQuote(data: unknown): Promise<IpcResult<unknown>> };
-  contribution: { simulate(data: unknown): Promise<IpcResult<unknown[]>> };
+  contribution: {
+    createBlock(data: unknown): Promise<IpcResult<unknown>>;
+    setMonthlyBlock(data: unknown): Promise<IpcResult<void>>;
+    simulate(data: unknown): Promise<IpcResult<unknown[]>>;
+  };
   rebalancing: { analyze(id: string, t?: number): Promise<IpcResult<unknown>> };
   brokerageNotes: { list(): Promise<IpcResult<unknown[]>>; register(data: unknown): Promise<IpcResult<unknown>> };
   patrimony: { capture(data: unknown): Promise<IpcResult<unknown>>; list(id: string): Promise<IpcResult<unknown[]>> };

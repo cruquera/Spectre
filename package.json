@@ -9,7 +9,7 @@
     "data-contracts"
   ],
   "scripts": {
-    "postinstall": "npm run prisma:generate",
+    "postinstall": "prisma generate --schema=prisma/user-schema.prisma && prisma generate --schema=prisma/benchmark-schema.prisma",
     "prisma:generate": "prisma generate --schema=prisma/user-schema.prisma && prisma generate --schema=prisma/benchmark-schema.prisma",
     "prisma:migrate:user": "prisma migrate dev --schema=prisma/user-schema.prisma",
     "build:contracts": "npm run build -w @spectre/data-contracts",

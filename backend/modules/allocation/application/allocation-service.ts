@@ -7,9 +7,11 @@ import {
 } from '../domain/allocation-calculator.js';
 
 export class AllocationService {
-  private readonly valuation = new ValuationService(this.ctx);
+  private readonly valuation: ValuationService;
 
-  constructor(private readonly ctx: AppContext) {}
+  constructor(private readonly ctx: AppContext) {
+    this.valuation = new ValuationService(ctx);
+  }
 
   async setCategoryTarget(portfolioId: string, category: string, targetPercent: number) {
     const db = this.ctx.getUserClient();

@@ -21,7 +21,7 @@ import {
   generateTaxPreviewSchema,
   importQuotesCsvSchema,
   importOperationsCsvSchema,
-} from '@spectre/data-contracts';
+} from '../../../data-contracts/dist/index.js';
 import type { AppContext } from '../app-context.js';
 import { toIpcResult, ok } from '../kernel/result.js';
 import { IdentityService } from '../../modules/identity/application/identity-service.js';

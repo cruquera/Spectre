@@ -41,7 +41,7 @@ export class InstitutionsComponent implements OnInit {
 
   async load() {
     const res = await this.ipc.institutions.list();
-    if (res.success) this.items.set(res.data as typeof this.items extends signal<infer T> ? T : never);
+    if (res.success) this.items.set(res.data as Array<{ id: string; name: string; type: string }>);
   }
 
   async create() {

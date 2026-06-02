@@ -5,7 +5,7 @@ import { ValuationService } from '../../valuation/application/valuation-service.
 export class PatrimonyService {
   private readonly valuation: ValuationService;
 
-  constructor(ctx: AppContext) {
+  constructor(private readonly ctx: AppContext) {
     this.valuation = new ValuationService(ctx);
   }
 

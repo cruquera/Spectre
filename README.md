@@ -14,9 +14,20 @@ Ver [`docs/architecture/overview.md`](docs/architecture/overview.md).
 
 ## Desenvolvimento
 
-```bash
+### Windows — Node no PATH
+
+Se `node` funciona mas `npm` não, o terminal pode estar usando o Node do Cursor. Rode antes de qualquer comando:
+
+```powershell
+. .\scripts\setup-path.ps1
+```
+
+Ou adicione permanentemente em **Configurações → Sistema → Variáveis de ambiente → Path**:
+
+`C:\Program Files\nodejs` **acima** de entradas do Cursor.
+
+```powershell
 npm install
-npm run prisma:generate
 npm run build
 npm run start:dev
 ```
