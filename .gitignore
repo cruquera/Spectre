@@ -13,3 +13,8 @@ test-results/
 .DS_Store
 Thumbs.db
 spectre-data/
+
+# Stale compiled artifacts
+data-contracts/src/*.js
+data-contracts/src/*.d.ts
+data-contracts/src/*.map

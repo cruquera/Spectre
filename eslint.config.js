@@ -56,21 +56,6 @@ const jsBaseConfigs = compat.extends('eslint:recommended').map((config) => ({
   },
 }));
 
-const dataContractsJsConfig = {
-  files: ['data-contracts/src/**/*.js'],
-  languageOptions: {
-    ecmaVersion: 'latest',
-    globals: {
-      ...globals.es2021,
-      ...globals.node,
-    },
-    parserOptions: {
-      ecmaVersion: 'latest',
-      sourceType: 'script',
-    },
-  },
-};
-
 const htmlBaseConfigs = compat.extends('plugin:@angular-eslint/template/recommended').map((config) => ({
   ...config,
   files: ['**/*.html'],
@@ -176,7 +161,6 @@ module.exports = [
     },
   },
   ...jsBaseConfigs,
-  dataContractsJsConfig,
   {
     files: ['*.js', '*.cjs', '*.mjs'],
     rules: {
