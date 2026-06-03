@@ -13,13 +13,13 @@ export const portfolioSchema = z.object({
   baseCurrency: z.string(),
   id: z.string(),
   name: z.string(),
-  strategyId: z.string().nullable()
+  strategyId: z.string().nullable(),
 });
 
 export const createPortfolioSchema = z.object({
   accountIds: z.array(z.string()).optional(),
   baseCurrency: z.string().length(3).default('BRL'),
-  name: z.string().min(1)
+  name: z.string().min(1),
 });
 
 export const createTransactionSchema = z.object({
@@ -32,7 +32,7 @@ export const createTransactionSchema = z.object({
   taxes: z.number().nonnegative().default(0),
   tradeDate: z.string(),
   type: transactionTypeSchema,
-  unitPrice: z.number().nonnegative()
+  unitPrice: z.number().nonnegative(),
 });
 
 export const positionSchema = z.object({
@@ -41,7 +41,7 @@ export const positionSchema = z.object({
   averageCost: z.number(),
   costCurrency: z.string(),
   id: z.string(),
-  quantity: z.number()
+  quantity: z.number(),
 });
 
 export type PortfolioDto = z.infer<typeof portfolioSchema>;

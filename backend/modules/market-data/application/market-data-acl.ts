@@ -1,22 +1,20 @@
-import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
 import { BenchmarkService } from '../../benchmark/application/benchmark-service.js';
 
-/** Anti-Corruption Layer ??? only passes public benchmark DTOs */
 export class MarketDataAcl {
   private readonly benchmark: BenchmarkService;
 
-  constructor(ctx: AppContext) {
-    this.benchmark = new BenchmarkService(ctx);
+  public constructor(benchmark: BenchmarkService) {
+    this.benchmark = benchmark;
   }
 
-  async quoteFromBenchmark(ticker: string, assetId: string) {
+  public async quoteFromBenchmark(ticker: string, assetId: string): Promise<Result<{ asOf: string; assetId: string; price: number; source: 'BENCHMARK' } | null, never>> {
     const result = await this.benchmark.listCached({
-  benchmarkType: 'PRICE',
-  period: '1M',
-  source: 'YAHOO',
-  ticker
-});
+      benchmarkType: 'PRICE',
+      period: '1M',
+      source: 'YAHOO',
+      ticker,
+    });
 
     if (!result.ok || !result.value) {
       return ok(null);
@@ -26,10 +24,10 @@ export class MarketDataAcl {
     if (!latest) return ok(null);
 
     return ok({
-  asOf: latest.date,
-  assetId,
-  price: latest.value,
-  source: 'BENCHMARK' as const
-});
+      asOf: latest.date,
+      assetId,
+      price: latest.value,
+      source: 'BENCHMARK' as const,
+    });
   }
 }

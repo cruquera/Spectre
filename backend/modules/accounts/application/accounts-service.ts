@@ -1,25 +1,23 @@
+import type { AccountRepository } from './account-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
+import type { Account } from '../domain/account.js';
 
 export class AccountsService {
-  constructor(private readonly ctx: AppContext) {}
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly accountRepo: AccountRepository,
+  ) {}
 
-  async list(institutionId?: string) {
-    const db = this.ctx.getUserClient();
-    const items = await db.account.findMany({
-      where: institutionId ? { institutionId } : undefined,
-      orderBy: { name: 'asc' },
-    });
+  public async list(institutionId?: string): Promise<Result<Account[], never>> {
+    const accounts = await this.accountRepo.list(institutionId);
 
-    return ok(items);
+    return ok(accounts);
   }
 
-  async create(institutionId: string, name: string, currency: string) {
-    const db = this.ctx.getUserClient();
-    const item = await db.account.create({
-      data: { institutionId, name, currency },
-    });
+  public async create(institutionId: string, name: string, currency: string): Promise<Result<Account, never>> {
+    const account = await this.accountRepo.create(institutionId, name, currency);
 
-    return ok(item);
+    return ok(account);
   }
 }

@@ -7,7 +7,7 @@ export const categoryAllocationSchema = z.object({
   deviation: z.number(),
   needsRebalance: z.boolean(),
   realPercent: z.number(),
-  targetPercent: z.number().min(0).max(100)
+  targetPercent: z.number().min(0).max(100),
 });
 
 export const assetAllocationSchema = z.object({
@@ -17,26 +17,26 @@ export const assetAllocationSchema = z.object({
   needsRebalance: z.boolean(),
   realPercent: z.number(),
   symbol: z.string(),
-  targetPercent: z.number()
+  targetPercent: z.number(),
 });
 
 export const allocationAnalysisSchema = z.object({
   assets: z.array(assetAllocationSchema),
   categories: z.array(categoryAllocationSchema),
   portfolioId: z.string(),
-  thresholdPercent: z.number()
+  thresholdPercent: z.number(),
 });
 
 export const setCategoryAllocationSchema = z.object({
   category: assetCategorySchema,
   portfolioId: z.string(),
-  targetPercent: z.number().min(0).max(100)
+  targetPercent: z.number().min(0).max(100),
 });
 
 export const setAssetAllocationSchema = z.object({
   assetId: z.string(),
   portfolioId: z.string(),
-  targetPercent: z.number().min(0).max(100)
+  targetPercent: z.number().min(0).max(100),
 });
 
 export type AllocationAnalysisDto = z.infer<typeof allocationAnalysisSchema>;

@@ -1,27 +1,31 @@
 import { JsonPipe } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { IpcService } from '../../core/services/ipc.service';
 
 @Component({
   imports: [ReactiveFormsModule, JsonPipe],
   standalone: true,
-  templateUrl: './rebalancing.component.html'
+  templateUrl: './rebalancing.component.html',
 })
-export class RebalancingComponent {
+export class RebalancingComponent implements OnInit {
+  public readonly result = signal<unknown>(null);
+  public form!: ReturnType<FormBuilder['group']>;
+
   private readonly ipc = inject(IpcService);
   private readonly fb = inject(FormBuilder);
-  readonly result = signal<unknown>(null);
 
-  form = this.fb.group({
-  portfolioId: ['', Validators.required],
-  threshold: [5]
-});
+  public ngOnInit(): void {
+    this.form = this.fb.group({
+      portfolioId: ['', (c: AbstractControl) => Validators.required(c)],
+      threshold: [5],
+    });
+  }
 
-  async analyze() {
-    const v = this.form.getRawValue();
-    const res = await this.ipc.rebalancing.analyze(v.portfolioId!, v.threshold ?? 5);
+  public async analyze(): Promise<void> {
+    const v = this.form.getRawValue() as { portfolioId: string; threshold: number };
+    const res = await this.ipc.rebalancing.analyze(v.portfolioId, v.threshold ?? 5);
 
     if (res.success) this.result.set(res.data);
   }

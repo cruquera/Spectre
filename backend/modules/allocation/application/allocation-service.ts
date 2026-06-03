@@ -1,7 +1,10 @@
+import type { AllocationRepository } from './allocation-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
 import { ValuationService } from '../../valuation/application/valuation-service.js';
 import {
+  type AllocationDeviation,
+  type AssetDeviation,
   calculateAssetDeviations,
   calculateCategoryDeviations,
 } from '../domain/allocation-calculator.js';
@@ -9,75 +12,42 @@ import {
 export class AllocationService {
   private readonly valuation: ValuationService;
 
-  constructor(private readonly ctx: AppContext) {
-    this.valuation = new ValuationService(ctx);
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly repo: AllocationRepository,
+    valuation: ValuationService,
+  ) {
+    this.valuation = valuation;
   }
 
-  async setCategoryTarget(portfolioId: string, category: string, targetPercent: number) {
-    const db = this.ctx.getUserClient();
-
-    await db.categoryAllocation.upsert({
-      where: {
-        portfolioId_category: {
-  category: category as 'CRYPTO',
-  portfolioId
-},
-      },
-      create: {
-  category: category as 'CRYPTO',
-  portfolioId,
-  targetPercent
-},
-      update: { targetPercent },
-    });
+  public async setCategoryTarget(portfolioId: string, category: string, targetPercent: number): Promise<Result<void, never>> {
+    await this.repo.setCategoryTarget(portfolioId, category, targetPercent);
 
     return ok(undefined);
   }
 
-  async setAssetTarget(portfolioId: string, assetId: string, targetPercent: number) {
-    const db = this.ctx.getUserClient();
-
-    await db.assetTargetAllocation.upsert({
-      where: { portfolioId_assetId: { portfolioId, assetId } },
-      create: { portfolioId, assetId, targetPercent },
-      update: { targetPercent },
-    });
+  public async setAssetTarget(portfolioId: string, assetId: string, targetPercent: number): Promise<Result<void, never>> {
+    await this.repo.setAssetTarget(portfolioId, assetId, targetPercent);
 
     return ok(undefined);
   }
 
-  async analyze(portfolioId: string, thresholdPercent: number) {
-  );
-
-    await db.rebalanceAnalysis.create({
-      data: {
-        portfolioId,
-        thresholdPercent,
-        results: JSON.stringify({ categories, assets }),
-      },
-    });
-
-    return ok({ portfolioId, thresholdPercent, categories, assets });,
-  categoryValues,
-  const db = this.ctx.getUserClient();
-    const portfolio = await db.portfolio.findUniqueOrThrow({ where: { id: portfolioId } });
+  public async analyze(portfolioId: string, thresholdPercent: number): Promise<Result<{ assets: AssetDeviation[]; categories: AllocationDeviation[]; portfolioId: string; thresholdPercent: number }, never>> {
+    const portfolio = await this.repo.getPortfolio(portfolioId);
     const valuation = await this.valuation.getPortfolioValue(portfolioId, portfolio.baseCurrency);
 
     if (!valuation.ok) throw new Error('Valuation failed');
 
-    const categoryTargets = await db.categoryAllocation.findMany({ where: { portfolioId } });
-    const assetTargets = await db.assetTargetAllocation.findMany({
-      where: { portfolioId },
-      include: { asset: true },
-    });
+    const categoryTargets = await this.repo.getCategoryTargets(portfolioId);
+    const assetTargets = await this.repo.getAssetTargets(portfolioId);
 
     const breakdown = valuation.value.breakdown;
     const categoryValues: Record<string, number> = {};
 
     for (const at of assetTargets) {
-      const v = breakdown[at.asset.symbol] ?? 0;
+      const v = breakdown[at.asset!.symbol] ?? 0;
 
-      categoryValues[at.asset.category] = (categoryValues[at.asset.category] ?? 0) + v;
+      categoryValues[at.asset!.category] = (categoryValues[at.asset!.category] ?? 0) + v;
     }
 
     const catInput = categoryTargets.map((ct) => ({
@@ -89,12 +59,22 @@ export class AllocationService {
     const categories = calculateCategoryDeviations(catInput, thresholdPercent);
     const assets = calculateAssetDeviations(
       assetTargets.map((at) => ({
-  assetId: at.assetId,
-  category: at.asset.category,
-  symbol: at.asset.symbol,
-  targetPercent: at.targetPercent,
-  value: breakdown[at.asset.symbol] ?? 0
-})),
-  thresholdPercent
-}
+        assetId: at.assetId,
+        category: at.asset!.category,
+        symbol: at.asset!.symbol,
+        targetPercent: at.targetPercent,
+        value: breakdown[at.asset!.symbol] ?? 0,
+      })),
+      categoryValues,
+      thresholdPercent,
+    );
+
+    await this.repo.saveAnalysis({
+      portfolioId,
+      results: JSON.stringify({ assets, categories }),
+      thresholdPercent,
+    });
+
+    return ok({ assets, categories, portfolioId, thresholdPercent });
+  }
 }

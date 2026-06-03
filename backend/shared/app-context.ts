@@ -12,23 +12,23 @@ export class AppContext {
   private session: SessionState | null = null;
   private readonly dataRoot: string;
 
-  constructor(dataRoot: string) {
+  public constructor(dataRoot: string) {
     this.dataRoot = dataRoot;
   }
 
-  getDataRoot(): string {
+  public getDataRoot(): string {
     return this.dataRoot;
   }
 
-  getSession(): SessionState | null {
+  public getSession(): SessionState | null {
     return this.session;
   }
 
-  setSession(session: SessionState | null): void {
+  public setSession(session: SessionState | null): void {
     this.session = session;
   }
 
-  getUserClient(): UserPrismaClient {
+  public getUserClient(): UserPrismaClient {
     if (!this.userClient) {
       throw new Error('Database not unlocked. Please login.');
     }
@@ -36,11 +36,11 @@ export class AppContext {
     return this.userClient;
   }
 
-  setUserClient(client: UserPrismaClient | null): void {
+  public setUserClient(client: UserPrismaClient | null): void {
     this.userClient = client;
   }
 
-  getBenchmarkClient(): BenchmarkPrismaClient {
+  public getBenchmarkClient(): BenchmarkPrismaClient {
     if (!this.benchmarkClient) {
       throw new Error('Benchmark database not initialized.');
     }
@@ -48,11 +48,11 @@ export class AppContext {
     return this.benchmarkClient;
   }
 
-  setBenchmarkClient(client: BenchmarkPrismaClient | null): void {
+  public setBenchmarkClient(client: BenchmarkPrismaClient | null): void {
     this.benchmarkClient = client;
   }
 
-  requireSession(): SessionState {
+  public requireSession(): SessionState {
     if (!this.session) {
       throw new Error('No active session');
     }

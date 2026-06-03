@@ -9,10 +9,10 @@ export async function seedDefaultStrategies(client: UserPrismaClient): Promise<v
 
   await client.strategy.create({
     data: {
-  isActive: true,
-  key: 'weighted-rebalance',
-  name: 'Rebalanceamento Ponderado',
-  version: '1.0.0'
-},
+      isActive: true,
+      key: 'weighted-rebalance',
+      name: 'Rebalanceamento Ponderado',
+      version: '1.0.0',
+    },
   });
 }

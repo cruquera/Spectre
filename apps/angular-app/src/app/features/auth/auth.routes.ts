@@ -5,7 +5,7 @@ import { LoginComponent } from './login.component';
 import { ProfileSelectComponent } from './profile-select.component';
 
 export const AUTH_ROUTES: Routes = [
-  { path: '', component: ProfileSelectComponent },
-  { path: 'login/:slug', component: LoginComponent },
-  { path: 'create', component: CreateProfileComponent },
+  { component: ProfileSelectComponent, path: '' },
+  { component: LoginComponent, path: 'login/:slug' },
+  { component: CreateProfileComponent, path: 'create' },
 ];

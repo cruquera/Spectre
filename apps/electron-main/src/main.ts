@@ -14,15 +14,15 @@ const appContext = new AppContext(dataRoot);
 
 async function createWindow(): Promise<void> {
   mainWindow = new BrowserWindow({
-  height: 800,
-  webPreferences: {
-  contextIsolation: true,
-  nodeIntegration: false,
-  preload: path.join(__dirname, '../../electron-preload/dist/preload.js'),
-  sandbox: true
-},
-  width: 1280
-});
+    height: 800,
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      preload: path.join(__dirname, '../../electron-preload/dist/preload.js'),
+      sandbox: true,
+    },
+    width: 1280,
+  });
 
   if (isDev) {
     await mainWindow.loadURL('http://localhost:4200');

@@ -1,9 +1,9 @@
 import type { BenchmarkDataPoint, BenchmarkRequest } from '../../domain/benchmark-request.js';
 
 export class BcbAdapter {
-  readonly source = 'BCB';
+  public readonly source = 'BCB';
 
-  fetch(request: BenchmarkRequest): Promise<BenchmarkDataPoint[]> {
+  public fetch(request: BenchmarkRequest): Promise<BenchmarkDataPoint[]> {
     const now = new Date();
 
     return Promise.resolve([

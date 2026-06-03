@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
 import { IpcService } from '../../core/services/ipc.service';
@@ -7,22 +7,26 @@ import { IpcService } from '../../core/services/ipc.service';
 @Component({
   imports: [ReactiveFormsModule, RouterLink],
   standalone: true,
-  templateUrl: './create-profile.component.html'
+  templateUrl: './create-profile.component.html',
 })
-export class CreateProfileComponent {
+export class CreateProfileComponent implements OnInit {
+  public readonly error = signal<string | null>(null);
+  public form!: FormGroup;
+
   private readonly ipc = inject(IpcService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
-  readonly error = signal<string | null>(null);
 
-  form = this.fb.group({
-  displayName: ['', Validators.required],
-  password: ['', [Validators.required, Validators.minLength(4)]],
-  slug: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]]
-});
+  public ngOnInit(): void {
+    this.form = this.fb.group({
+      displayName: ['', (c: AbstractControl) => Validators.required(c)],
+      password: ['', [(c: AbstractControl) => Validators.required(c), Validators.minLength(4)]],
+      slug: ['', [(c: AbstractControl) => Validators.required(c), Validators.pattern(/^[a-z0-9-]+$/)]],
+    });
+  }
 
-  async submit() {
-    const v = this.form.getRawValue();
+  public async submit(): Promise<void> {
+    const v = this.form.getRawValue() as { displayName: string; password: string; slug: string };
     const res = await this.ipc.identity.createProfile(v);
 
     if (res.success) {

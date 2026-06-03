@@ -41,11 +41,11 @@ const jsBaseConfigs = compat.extends('eslint:recommended').map((config) => ({
   files: ['**/*.{js,cjs,mjs}'],
   languageOptions: {
     // ???? CORRIGIDO: Removido 'env' e adicionado 'globals'
-    globals: {
-  ...globals.es2021, // O pacote 'globals' mapeia es2021+ cobrindo o comportamento do es2023,
-  ...globals.node
-},
     ecmaVersion: 'latest',
+    globals: {
+      ...globals.es2021, // O pacote 'globals' mapeia es2021+ cobrindo o comportamento do es2023,
+      ...globals.node,
+    },
     parserOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -59,12 +59,11 @@ const jsBaseConfigs = compat.extends('eslint:recommended').map((config) => ({
 const dataContractsJsConfig = {
   files: ['data-contracts/src/**/*.js'],
   languageOptions: {
-    // ???? CORRIGIDO: Removido 'env' e adicionado 'globals'
-    globals: {
-  ...globals.es2021,
-  ...globals.node
-},
     ecmaVersion: 'latest',
+    globals: {
+      ...globals.es2021,
+      ...globals.node,
+    },
     parserOptions: {
       ecmaVersion: 'latest',
       sourceType: 'script',
@@ -94,10 +93,10 @@ module.exports = [
     rules: {
       '@angular-eslint/component-class-suffix': 'error',
       '@angular-eslint/directive-selector': ['error', { prefix: 'sp', style: 'camelCase', type: 'attribute' }],
-      '@angular-eslint/no-input-rename': 'error',
-      '@angular-eslint/no-output-rename': 'error',
-      '@angular-eslint/no-output-native': 'error',
       '@angular-eslint/no-empty-lifecycle-method': 'warn',
+      '@angular-eslint/no-input-rename': 'error',
+      '@angular-eslint/no-output-native': 'error',
+      '@angular-eslint/no-output-rename': 'error',
       '@angular-eslint/use-lifecycle-interface': 'warn',
       '@angular-eslint/use-pipe-transform-interface': 'warn',
       '@typescript-eslint/adjacent-overload-signatures': 'error',
@@ -128,16 +127,16 @@ module.exports = [
         },
       ],
       '@typescript-eslint/method-signature-style': ['error', 'method'],
-      '@typescript-eslint/unbound-method': 'warn',
-      '@typescript-eslint/no-misused-promises': 'warn',
-      '@typescript-eslint/no-unsafe-member-access': 'warn',
-      '@typescript-eslint/no-unsafe-call': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn',
-      '@typescript-eslint/no-unsafe-return': 'warn',
       '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-misused-promises': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
       '@typescript-eslint/no-unsafe-assignment': 'warn',
+      '@typescript-eslint/no-unsafe-call': 'warn',
+      '@typescript-eslint/no-unsafe-member-access': 'warn',
+      '@typescript-eslint/no-unsafe-return': 'warn',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       '@typescript-eslint/prefer-readonly': 'error',
+      '@typescript-eslint/unbound-method': 'warn',
       'array-bracket-newline': ['error', 'consistent'],
       'array-element-newline': ['error', 'consistent'],
       'brace-style': ['error', '1tbs', { allowSingleLine: true }],

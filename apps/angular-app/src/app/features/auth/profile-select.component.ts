@@ -6,15 +6,20 @@ import { IpcService } from '../../core/services/ipc.service';
 @Component({
   imports: [RouterLink],
   standalone: true,
-  templateUrl: './profile-select.component.html'
+  templateUrl: './profile-select.component.html',
 })
 export class ProfileSelectComponent implements OnInit {
+  public readonly profiles = signal<Array<{ slug: string; displayName: string }>>([]);
+  public readonly error = signal<string | null>(null);
+
   private readonly ipc = inject(IpcService);
   private readonly router = inject(Router);
-  readonly profiles = signal<Array<{ slug: string; displayName: string }>>([]);
-  readonly error = signal<string | null>(null);
 
-  async ngOnInit() {
+  public ngOnInit(): void {
+    void this.loadProfiles();
+  }
+
+  private async loadProfiles(): Promise<void> {
     try {
       await this.ipc.init();
       const res = await this.ipc.identity.listProfiles();

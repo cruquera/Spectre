@@ -1,35 +1,29 @@
-import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import type { PortfolioRepository } from './portfolio-repository.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
+import type { Portfolio } from '../domain/portfolio.js';
+import type { Position } from '../domain/position.js';
+import type { Transaction } from '../domain/transaction.js';
 
 export class PortfolioService {
-  constructor(private readonly ctx: AppContext) {}
+  public constructor(private readonly repo: PortfolioRepository) {}
 
-  async list() {
-    const db = this.ctx.getUserClient();
-    const items = await db.portfolio.findMany({ orderBy: { name: 'asc' } });
+  public async list(): Promise<Result<Portfolio[], never>> {
+    const items = await this.repo.list();
 
     return ok(items);
   }
 
-  async create(name: string, baseCurrency: string, accountIds?: string[]) {
-    const db = this.ctx.getUserClient();
-    const portfolio = await db.portfolio.create({
-      data: { name, baseCurrency },
-    });
+  public async create(name: string, baseCurrency: string, accountIds?: string[]): Promise<Result<Portfolio, never>> {
+    const portfolio = await this.repo.create(name, baseCurrency);
 
     if (accountIds?.length) {
-      await db.portfolioAccount.createMany({
-        data: accountIds.map((accountId) => ({
-  accountId,
-  portfolioId: portfolio.id
-})),
-      });
+      await this.repo.linkAccounts(portfolio.id, accountIds);
     }
 
     return ok(portfolio);
   }
 
-  async createTransaction(data: {
+  public async createTransaction(data: {
     accountId: string;
     assetId: string;
     type: string;
@@ -40,59 +34,22 @@ export class PortfolioService {
     tradeDate: string;
     currency: string;
     fxRate?: number;
-  }) {
-    const db = this.ctx.getUserClient();
-    const tx = await db.transaction.create({
-      data: {
-  ...data,
-  tradeDate: new Date(data.tradeDate),
-  type: data.type as 'BUY' | 'SELL'
-},
+  }): Promise<Result<Transaction, never>> {
+    const tx = await this.repo.createTransaction({
+      ...data,
+      tradeDate: new Date(data.tradeDate),
     });
 
-    await this.updatePosition(data.accountId, data.assetId, data.type, data.quantity, data.unitPrice, data.currency);
+    await this.repo.updatePositionAfterTransaction(
+      data.accountId, data.assetId, data.type, data.quantity, data.unitPrice, data.currency,
+    );
 
     return ok(tx);
   }
 
-  async listPositions(accountId?: string) {
-    const db = this.ctx.getUserClient();
-    const items = await db.position.findMany({
-      where: accountId ? { accountId } : undefined,
-      include: { asset: true },
-    });
+  public async listPositions(accountId?: string): Promise<Result<Position[], never>> {
+    const items = await this.repo.listPositions(accountId);
 
     return ok(items);
-  }
-
-  private async updatePosition(
-    accountId: string,
-    assetId: string,
-    type: string,
-    quantity: number,
-    unitPrice: number,
-    currency: string,
-  ) {
-    const db = this.ctx.getUserClient();
-    const existing = await db.position.findUnique({
-      where: { accountId_assetId: { accountId, assetId } },
-    });
-    const delta = type === 'SELL' ? -quantity : quantity;
-
-    if (!existing) {
-      if (delta > 0) {
-        await db.position.create({
-          data: { accountId, assetId, quantity: delta, averageCost: unitPrice, costCurrency: currency },
-        });
-      }
-
-      return;
-    }
-    const newQty = existing.quantity + delta;
-
-    await db.position.update({
-      where: { id: existing.id },
-      data: { quantity: newQty },
-    });
   }
 }

@@ -13,7 +13,7 @@ export const assetSchema = z.object({
   currency: z.string(),
   id: z.string(),
   name: z.string(),
-  symbol: z.string()
+  symbol: z.string(),
 });
 
 export const createAssetSchema = z.object({
@@ -21,7 +21,7 @@ export const createAssetSchema = z.object({
   category: assetCategorySchema,
   currency: z.string().length(3),
   name: z.string().min(1),
-  symbol: z.string().min(1)
+  symbol: z.string().min(1),
 });
 
 export type AssetDto = z.infer<typeof assetSchema>;

@@ -1,23 +1,21 @@
-import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
 import { PatrimonyService } from '../../patrimony-history/application/patrimony-service.js';
 
-/** Read-only analytics facade for charts */
 export class AnalyticsService {
   private readonly patrimony: PatrimonyService;
 
-  constructor(ctx: AppContext) {
-    this.patrimony = new PatrimonyService(ctx);
+  public constructor(patrimony: PatrimonyService) {
+    this.patrimony = patrimony;
   }
 
-  async portfolioEvolution(portfolioId: string) {
+  public async portfolioEvolution(portfolioId: string): Promise<Result<{ portfolioId: string; series: Array<{ currency: string; date: string; value: number }> }, never>> {
     const history = await this.patrimony.listHistory(portfolioId);
 
     if (!history.ok) return history;
     const series = history.value.map((s: { capturedAt: Date; totalValue: number; currency: string }) => ({
+      currency: s.currency,
       date: s.capturedAt.toISOString(),
       value: s.totalValue,
-      currency: s.currency,
     }));
 
     return ok({ portfolioId, series });

@@ -5,12 +5,12 @@ import { Component, input, output } from '@angular/core';
   imports: [JsonPipe],
   selector: 'sp-crud-list',
   standalone: true,
-  templateUrl: './crud-list.component.html'
+  templateUrl: './crud-list.component.html',
 })
 export class CrudListComponent {
-  title = input.required<string>();
-  addLabel = input('Adicionar');
-  items = input<unknown[]>([]);
-  error = input<string | null>(null);
-  add = output<void>();
+  public readonly title = input.required<string>();
+  public readonly addLabel = input('Adicionar');
+  public readonly items = input<unknown[]>([]);
+  public readonly error = input<string | null>(null);
+  public readonly add = output<void>();
 }

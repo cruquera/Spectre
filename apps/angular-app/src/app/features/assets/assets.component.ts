@@ -1,33 +1,32 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { IpcService } from '../../core/services/ipc.service';
 
 @Component({
   imports: [ReactiveFormsModule],
   standalone: true,
-  templateUrl: './assets.component.html'
+  templateUrl: './assets.component.html',
 })
 export class AssetsComponent implements OnInit {
+  public readonly items = signal<Array<{ id: string; symbol: string; name: string; category: string }>>([]);
+  public form!: FormGroup;
+
   private readonly ipc = inject(IpcService);
   private readonly fb = inject(FormBuilder);
-  readonly items = signal<Array<{ id: string; symbol: string; name: string; category: string }>>([]);
 
-  form = this.fb.group({
-  assetType: ['CRYPTO', Validators.required],
-  category: ['CRYPTO' as const, Validators.required],
-  currency: ['USD', Validators.required],
-  name: ['', Validators.required],
-  symbol: ['', Validators.required]
-});
-
-  async ngOnInit() {
-    const res = await this.ipc.assets.list();
-
-    if (res.success) this.items.set(res.data as never);
+  public ngOnInit(): void {
+    this.form = this.fb.group({
+      assetType: ['CRYPTO', (c: AbstractControl) => Validators.required(c)],
+      category: ['CRYPTO' as const, (c: AbstractControl) => Validators.required(c)],
+      currency: ['USD', (c: AbstractControl) => Validators.required(c)],
+      name: ['', (c: AbstractControl) => Validators.required(c)],
+      symbol: ['', (c: AbstractControl) => Validators.required(c)],
+    });
+    void this.load();
   }
 
-  async create() {
+  public async create(): Promise<void> {
     const res = await this.ipc.assets.create(this.form.getRawValue());
 
     if (res.success) {
@@ -35,5 +34,11 @@ export class AssetsComponent implements OnInit {
 
       if (list.success) this.items.set(list.data as never);
     }
+  }
+
+  private async load(): Promise<void> {
+    const res = await this.ipc.assets.list();
+
+    if (res.success) this.items.set(res.data as never);
   }
 }

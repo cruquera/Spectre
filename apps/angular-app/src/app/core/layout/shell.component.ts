@@ -7,28 +7,28 @@ import { IpcService } from '../services/ipc.service';
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   selector: 'sp-shell',
   standalone: true,
-  templateUrl: './shell.component.html'
+  templateUrl: './shell.component.html',
 })
 export class ShellComponent {
-  private readonly ipc = inject(IpcService);
-  readonly session = this.ipc.session;
-
-  nav = [
-    { path: '/dashboard', label: 'Dashboard' },
-    { path: '/institutions', label: 'Institui????es' },
-    { path: '/accounts', label: 'Contas' },
-    { path: '/assets', label: 'Ativos' },
-    { path: '/portfolio', label: 'Carteira' },
-    { path: '/allocation', label: 'Aloca????o' },
-    { path: '/contributions', label: 'Aportes' },
-    { path: '/rebalancing', label: 'Rebalanceamento' },
-    { path: '/brokerage-notes', label: 'Notas' },
-    { path: '/patrimony', label: 'Patrim??nio' },
-    { path: '/analytics', label: 'Analytics' },
-    { path: '/settings', label: 'Configura????es' },
+  public get session(): { displayName: string; slug: string } | null { return this.ipc.session(); }
+  public readonly nav = [
+    { label: 'Dashboard', path: '/dashboard' },
+    { label: 'Institui????es', path: '/institutions' },
+    { label: 'Contas', path: '/accounts' },
+    { label: 'Ativos', path: '/assets' },
+    { label: 'Carteira', path: '/portfolio' },
+    { label: 'Aloca????o', path: '/allocation' },
+    { label: 'Aportes', path: '/contributions' },
+    { label: 'Rebalanceamento', path: '/rebalancing' },
+    { label: 'Notas', path: '/brokerage-notes' },
+    { label: 'Patrim??nio', path: '/patrimony' },
+    { label: 'Analytics', path: '/analytics' },
+    { label: 'Configura????es', path: '/settings' },
   ];
 
-  async logout() {
+  private readonly ipc = inject(IpcService);
+
+  public async logout(): Promise<void> {
     await this.ipc.identity.logout();
     this.ipc.session.set(null);
     location.href = '/auth';

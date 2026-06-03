@@ -14,9 +14,9 @@ export type ParsedBrokerageNote = {
 
 /** No implementation in v1 ??? manual entry only */
 export class NoOpBrokerageNoteParser implements BrokerageNoteParserPort {
-  readonly brokerKey = 'manual';
+  public readonly brokerKey = 'manual';
 
-  parsePdf(): Promise<ParsedBrokerageNote> {
+  public parsePdf(): Promise<ParsedBrokerageNote> {
     return Promise.resolve({ operations: [] });
   }
 }

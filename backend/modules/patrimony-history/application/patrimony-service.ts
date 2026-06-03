@@ -1,38 +1,37 @@
+import type { PatrimonyRepository } from './patrimony-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
 import { ValuationService } from '../../valuation/application/valuation-service.js';
+import type { PatrimonySnapshot } from '../domain/patrimony-snapshot.js';
 
 export class PatrimonyService {
   private readonly valuation: ValuationService;
 
-  constructor(private readonly ctx: AppContext) {
-    this.valuation = new ValuationService(ctx);
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly repo: PatrimonyRepository,
+    valuation: ValuationService,
+  ) {
+    this.valuation = valuation;
   }
 
-  async captureSnapshot(portfolioId: string) {
-    const db = this.ctx.getUserClient();
-    const portfolio = await db.portfolio.findUniqueOrThrow({ where: { id: portfolioId } });
-    const val = await this.valuation.getPortfolioValue(portfolioId, portfolio.baseCurrency);
+  public async captureSnapshot(portfolioId: string): Promise<Result<PatrimonySnapshot, never>> {
+    const baseCurrency = await this.repo.findPortfolioBaseCurrency(portfolioId);
+    const val = await this.valuation.getPortfolioValue(portfolioId, baseCurrency);
 
     if (!val.ok) throw new Error('Valuation failed');
-    const snap = await db.patrimonySnapshot.create({
-      data: {
-  breakdown: JSON.stringify(val.value.breakdown),
-  currency: val.value.currency,
-  portfolioId,
-  totalValue: val.value.total
-},
+    const snap = await this.repo.createSnapshot({
+      breakdown: JSON.stringify(val.value.breakdown),
+      currency: val.value.currency,
+      portfolioId,
+      totalValue: val.value.total,
     });
 
     return ok(snap);
   }
 
-  async listHistory(portfolioId: string) {
-    const db = this.ctx.getUserClient();
-    const items = await db.patrimonySnapshot.findMany({
-      where: { portfolioId },
-      orderBy: { capturedAt: 'asc' },
-    });
+  public async listHistory(portfolioId: string): Promise<Result<PatrimonySnapshot[], never>> {
+    const items = await this.repo.listSnapshots(portfolioId);
 
     return ok(items);
   }

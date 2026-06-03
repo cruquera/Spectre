@@ -1,26 +1,30 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { IpcService } from '../../core/services/ipc.service';
 
 @Component({
   imports: [ReactiveFormsModule],
   standalone: true,
-  templateUrl: './analytics.component.html'
+  templateUrl: './analytics.component.html',
 })
-export class AnalyticsComponent {
+export class AnalyticsComponent implements OnInit {
+  public readonly series = signal<{ dataPoints: Array<{ date: string; value: number }> } | null>(null);
+  public form!: ReturnType<FormBuilder['group']>;
+
   private readonly ipc = inject(IpcService);
   private readonly fb = inject(FormBuilder);
-  readonly series = signal<{ dataPoints: Array<{ date: string; value: number }> } | null>(null);
 
-  form = this.fb.group({
-  benchmarkType: ['INDEX'],
-  period: ['1Y'],
-  source: ['YAHOO'],
-  ticker: ['IBOV', Validators.required]
-});
+  public ngOnInit(): void {
+    this.form = this.fb.group({
+      benchmarkType: ['INDEX'],
+      period: ['1Y'],
+      source: ['YAHOO'],
+      ticker: ['IBOV', (c: AbstractControl) => Validators.required(c)],
+    });
+  }
 
-  chartBars() {
+  public chartBars(): Array<{ date: string; height: number; value: number }> {
     const pts = this.series()?.dataPoints ?? [];
 
     if (!pts.length) return [];
@@ -29,18 +33,18 @@ export class AnalyticsComponent {
     const range = max - min || 1;
 
     return pts.slice(-60).map((p) => ({
-  date: p.date,
-  height: ((p.value - min) / range) * 100,
-  value: p.value
-}));
+      date: p.date,
+      height: ((p.value - min) / range) * 100,
+      value: p.value,
+    }));
   }
 
-  async sync() {
+  public async sync(): Promise<void> {
     await this.ipc.benchmark.sync(this.form.getRawValue());
     await this.loadCache();
   }
 
-  async loadCache() {
+  public async loadCache(): Promise<void> {
     const res = await this.ipc.benchmark.listCached(this.form.getRawValue());
 
     if (res.success && res.data) this.series.set(res.data as never);

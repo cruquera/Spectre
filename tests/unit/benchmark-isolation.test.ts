@@ -3,11 +3,11 @@
 describe('Benchmark isolation', () => {
   it('BenchmarkRequest has no user fields', () => {
     const request = {
-  benchmarkType: 'RATE',
-  period: '1Y' as const,
-  source: 'BCB' as const,
-  ticker: 'CDI'
-};
+      benchmarkType: 'RATE',
+      period: '1Y' as const,
+      source: 'BCB' as const,
+      ticker: 'CDI',
+    };
 
     expect(request).not.toHaveProperty('userId');
     expect(request).not.toHaveProperty('portfolioId');

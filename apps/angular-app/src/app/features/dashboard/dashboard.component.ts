@@ -7,11 +7,16 @@ import { IpcService } from '../../core/services/ipc.service';
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  private readonly ipc = inject(IpcService);
-  readonly session = this.ipc.session;
-  readonly health = signal<{ status: string; version: string } | null>(null);
+  public get session(): { displayName: string; slug: string } | null { return this.ipc.session(); }
+  public readonly health = signal<{ status: string; version: string } | null>(null);
 
-  async ngOnInit() {
+  private readonly ipc = inject(IpcService);
+
+  public ngOnInit(): void {
+    void this.load();
+  }
+
+  private async load(): Promise<void> {
     const res = await this.ipc.healthcheck();
 
     if (res.success && res.data) {

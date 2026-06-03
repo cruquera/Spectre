@@ -64,7 +64,7 @@ for (const f of data) {
     }
     if (cur.trim()) items.push(cur);
     const entries = items.map(it => {
-      const mm = it.match(/^\s*(["']?[^:\"']+["']?)\s*:/);
+      const mm = it.match(/^\s*(["']?[^:"']+["']?)\s*:/);
       const keyRaw = mm ? mm[1].trim() : it.trim().split(':')[0].trim();
       const key = parseKey(keyRaw);
       return { key, keyRaw, body: it.replace(/,\s*$/,'').trim() };

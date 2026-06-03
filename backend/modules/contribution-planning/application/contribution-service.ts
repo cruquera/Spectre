@@ -1,51 +1,44 @@
+import type { ContributionRepository } from './contribution-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
 import { AllocationService } from '../../allocation/application/allocation-service.js';
 import { StrategyRegistry } from '../../strategies/application/strategy-registry.js';
+import type { StrategySuggestion } from '../../strategies/domain/contribution-strategy.js';
+import type { InvestmentBlock } from '../domain/investment-block.js';
 
 export class ContributionService {
-  private readonly allocation: AllocationService;
   private readonly registry = new StrategyRegistry();
 
-  constructor(private readonly ctx: AppContext) {
-    this.allocation = new AllocationService(ctx);
-  }
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly repo: ContributionRepository,
+    private readonly allocation: AllocationService,
+  ) {}
 
-  async createBlock(name: string, assetIds: string[]) {
-    const db = this.ctx.getUserClient();
-    const block = await db.investmentBlock.create({ data: { name } });
+  public async createBlock(name: string, assetIds: string[]): Promise<Result<InvestmentBlock, never>> {
+    const block = await this.repo.createBlock(name);
 
-    await db.blockAsset.createMany({
-      data: assetIds.map((assetId) => ({ blockId: block.id, assetId })),
-    });
+    await this.repo.addBlockAssets(
+      assetIds.map((assetId) => ({ assetId, blockId: block.id })),
+    );
 
     return ok(block);
   }
 
-  async setMonthlyBlock(year: number, month: number, blockId: string) {
-    const db = this.ctx.getUserClient();
-
-    await db.monthlyBlockSchedule.upsert({
-      where: { year_month: { year, month } },
-      create: { year, month, blockId },
-      update: { blockId },
-    });
+  public async setMonthlyBlock(year: number, month: number, blockId: string): Promise<Result<void, never>> {
+    await this.repo.upsertMonthlyBlock(year, month, blockId);
 
     return ok(undefined);
   }
 
-  async simulate(
+  public async simulate(
     portfolioId: string,
     amount: number,
     currency: string,
     year: number,
     month: number,
-  ) {
-    const db = this.ctx.getUserClient();
-    const config = await db.strategyConfig.findFirst({
-      where: { portfolioId },
-      include: { strategy: true },
-    });
+  ): Promise<Result<StrategySuggestion[], never>> {
+    const config = await this.repo.getStrategyConfig(portfolioId);
     const strategyKey = config?.strategy?.key ?? 'weighted-rebalance';
     const strategy = this.registry.get(strategyKey);
 
@@ -60,45 +53,38 @@ export class ContributionService {
 
     if (!analysis.ok) return ok([]);
 
-    const schedule = await db.monthlyBlockSchedule.findUnique({
-      where: { year_month: { year, month } },
-      include: { block: { include: { assets: true } } },
-    });
+    const schedule = await this.repo.getMonthlyBlock(year, month);
     const blockAssetIds = schedule?.block.assets.map((a) => a.assetId) ?? [];
 
     const suggestions = strategy.evaluate({
-  blockAssetIds,
-  brokerageCost,
-  currency,
-  deviations: analysis.value.assets.map((a) => ({
-  assetId: a.assetId,
-  deviation: a.deviation,
-  needsRebalance: a.needsRebalance,
-  symbol: a.symbol
-})),
-  minLot,
-  thresholdPercent: threshold,
-  totalAmount: amount
-});
+      blockAssetIds,
+      brokerageCost,
+      currency,
+      deviations: analysis.value.assets.map((a) => ({
+        assetId: a.assetId,
+        deviation: a.deviation,
+        needsRebalance: a.needsRebalance,
+        symbol: a.symbol,
+      })),
+      minLot,
+      thresholdPercent: threshold,
+      totalAmount: amount,
+    });
 
-    const plan = await db.contributionPlan.create({
-      data: {
-  amount,
-  currency,
-  plannedDate: new Date(year, month - 1, 1),
-  portfolioId,
-  status: 'SIMULATED'
-},
+    const plan = await this.repo.createPlan({
+      amount,
+      currency,
+      plannedDate: new Date(year, month - 1, 1),
+      portfolioId,
+      status: 'SIMULATED',
     });
 
     for (const s of suggestions) {
-      await db.contributionSuggestion.create({
-        data: {
-  assetId: s.assetId,
-  planId: plan.id,
-  rationale: JSON.stringify({ text: s.rationale }),
-  suggestedAmount: s.suggestedAmount
-},
+      await this.repo.createSuggestion({
+        assetId: s.assetId,
+        planId: plan.id,
+        rationale: JSON.stringify({ text: s.rationale }),
+        suggestedAmount: s.suggestedAmount,
       });
     }
 

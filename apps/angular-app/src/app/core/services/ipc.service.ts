@@ -2,9 +2,9 @@ import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class IpcService {
-  readonly session = signal<{ displayName: string; slug: string } | null>(null);
+  public readonly session = signal<{ displayName: string; slug: string } | null>(null);
 
-  private get api() {
+  private get api(): Window['spectre'] {
     if (!window.spectre) {
       throw new Error('Spectre API not available (run inside Electron)');
     }
@@ -12,75 +12,75 @@ export class IpcService {
     return window.spectre;
   }
 
-  async healthcheck() {
+  public async healthcheck(): ReturnType<Window['spectre']['healthcheck']> {
     return this.api.healthcheck();
   }
 
-  async init() {
+  public async init(): Promise<void> {
     await this.api.initBenchmarkDb();
   }
 
-  get identity() {
+  public get identity(): Window['spectre']['identity'] {
     return this.api.identity;
   }
 
-  get institutions() {
+  public get institutions(): Window['spectre']['institutions'] {
     return this.api.institutions;
   }
 
-  get accounts() {
+  public get accounts(): Window['spectre']['accounts'] {
     return this.api.accounts;
   }
 
-  get assets() {
+  public get assets(): Window['spectre']['assets'] {
     return this.api.assets;
   }
 
-  get portfolio() {
+  public get portfolio(): Window['spectre']['portfolio'] {
     return this.api.portfolio;
   }
 
-  get allocation() {
+  public get allocation(): Window['spectre']['allocation'] {
     return this.api.allocation;
   }
 
-  get benchmark() {
+  public get benchmark(): Window['spectre']['benchmark'] {
     return this.api.benchmark;
   }
 
-  get contribution() {
+  public get contribution(): Window['spectre']['contribution'] {
     return this.api.contribution;
   }
 
-  get rebalancing() {
+  public get rebalancing(): Window['spectre']['rebalancing'] {
     return this.api.rebalancing;
   }
 
-  get brokerageNotes() {
+  public get brokerageNotes(): Window['spectre']['brokerageNotes'] {
     return this.api.brokerageNotes;
   }
 
-  get patrimony() {
+  public get patrimony(): Window['spectre']['patrimony'] {
     return this.api.patrimony;
   }
 
-  get tax() {
+  public get tax(): Window['spectre']['tax'] {
     return this.api.tax;
   }
 
-  get import() {
+  public get import(): Window['spectre']['import'] {
     return this.api.import;
   }
 
-  get documents() {
+  public get documents(): Window['spectre']['documents'] {
     return this.api.documents;
   }
 
-  get valuation() {
+  public get valuation(): Window['spectre']['valuation'] {
     return this.api.valuation;
   }
 
-  get analyticsApi() {
+  public get analyticsApi(): Window['spectre']['analyticsApi'] {
     return this.api.analyticsApi;
   }
 }

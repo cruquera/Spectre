@@ -1,29 +1,34 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 
 import { IpcService } from '../../core/services/ipc.service';
 
 @Component({
   imports: [ReactiveFormsModule],
   standalone: true,
-  templateUrl: './patrimony.component.html'
+  templateUrl: './patrimony.component.html',
 })
 export class PatrimonyComponent implements OnInit {
+  public readonly snapshots = signal<Array<{ id: string; totalValue: number; currency: string; capturedAt: string }>>([]);
+  public form!: ReturnType<FormBuilder['group']>;
+
   private readonly ipc = inject(IpcService);
   private readonly fb = inject(FormBuilder);
-  readonly snapshots = signal<Array<{ id: string; totalValue: number; currency: string; capturedAt: string }>>([]);
 
-  form = this.fb.group({ portfolioId: ['', Validators.required] });
+  public ngOnInit(): void {
+    this.form = this.fb.group({ portfolioId: ['', (c: AbstractControl) => Validators.required(c)] });
+  }
 
-  async ngOnInit() {}
+  public async capture(): Promise<void> {
+    const v = this.form.value as { portfolioId: string };
 
-  async capture() {
-    await this.ipc.patrimony.capture({ portfolioId: this.form.value.portfolioId });
+    await this.ipc.patrimony.capture({ portfolioId: v.portfolioId });
     await this.load();
   }
 
-  async load() {
-    const id = this.form.value.portfolioId;
+  public async load(): Promise<void> {
+    const v = this.form.value as { portfolioId: string };
+    const id = v.portfolioId;
 
     if (!id) return;
     const res = await this.ipc.patrimony.list(id);

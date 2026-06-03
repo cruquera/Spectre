@@ -11,23 +11,23 @@ import {
 import { createEncryptedUserClient } from '../../../shared/database/prisma-factory.js';
 import { seedDefaultStrategies } from '../../../shared/database/seed-defaults.js';
 import { AppError, type Result, err, ok } from '../../../shared/kernel/result.js';
+import type { ProfileRegistryEntry } from '../domain/profile.js';
 import { CryptoService } from '../infrastructure/crypto-service.js';
 import { ProfileStore } from '../infrastructure/profile-store.js';
 
 export class IdentityService {
   private readonly profileStore: ProfileStore;
   private readonly crypto = new CryptoService();
-  private readonly passwordHashes = new Map<string, string>();
 
-  constructor(private readonly ctx: AppContext) {
+  public constructor(private readonly ctx: AppContext) {
     this.profileStore = new ProfileStore(ctx.getDataRoot());
   }
 
-  async listProfiles() {
+  public async listProfiles(): Promise<Result<ProfileRegistryEntry[], never>> {
     return ok(await this.profileStore.list());
   }
 
-  async createProfile(
+  public async createProfile(
     displayName: string,
     slug: string,
     password: string,
@@ -51,11 +51,7 @@ export class IdentityService {
 
       const hash = await this.crypto.hashPassword(password);
 
-      await fs.writeFile(
-        path.join(userDir, '.password-hash'),
-        hash,
-        'utf-8',
-      );
+      await fs.writeFile(path.join(userDir, '.password-hash'), hash, 'utf-8');
 
       const dbKey = await this.crypto.deriveDbKey(
         password,
@@ -73,12 +69,16 @@ export class IdentityService {
 
       return ok({ slug: entry.slug });
     } catch (e) {
-  ),
-  );
+      return err(
+        new AppError(
+          'CREATE_PROFILE_FAILED',
+          e instanceof Error ? e.message : 'Unknown error',
+        ),
+      );
     }
   }
 
-  async login(
+  public async login(
     slug: string,
     password: string,
   ): Promise<Result<{ displayName: string }, AppError>> {
@@ -86,12 +86,8 @@ export class IdentityService {
       const profile = await this.profileStore.findBySlug(slug);
 
       if (!profile) {
-        return err(new AppError('PROFILE_NOT_FOUND', 'Profile not found'));,
-  e instanceof Error ? e.message : 'Unknown error',
-  return err(
-        new AppError(
-          'CREATE_PROFILE_FAILED'
-}
+        return err(new AppError('PROFILE_NOT_FOUND', 'Profile not found'));
+      }
 
       const hashPath = path.join(
         getUserDir(this.ctx.getDataRoot(), slug),
@@ -122,7 +118,7 @@ export class IdentityService {
         // no previous session
       }
       this.ctx.setUserClient(client);
-      this.ctx.setSession({ slug, displayName: profile.displayName });
+      this.ctx.setSession({ displayName: profile.displayName, slug });
       await this.profileStore.updateLastLogin(slug);
 
       return ok({ displayName: profile.displayName });
@@ -136,7 +132,7 @@ export class IdentityService {
     }
   }
 
-  async logout(): Promise<Result<void, AppError>> {
+  public async logout(): Promise<Result<void, AppError>> {
     try {
       const client = this.ctx.getUserClient();
 

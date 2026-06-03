@@ -6,12 +6,12 @@ export const brokerageNoteSchema = z.object({
   id: z.string(),
   noteDate: z.string(),
   parsedStatus: z.string(),
-  relativePath: z.string()
+  relativePath: z.string(),
 });
 
 export const registerBrokerageNoteSchema = z.object({
   base64Content: z.string(),
   brokerId: z.string(),
   fileName: z.string(),
-  noteDate: z.string()
+  noteDate: z.string(),
 });

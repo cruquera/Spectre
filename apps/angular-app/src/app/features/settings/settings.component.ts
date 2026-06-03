@@ -6,27 +6,28 @@ import { IpcService } from '../../core/services/ipc.service';
 @Component({
   imports: [FormsModule],
   standalone: true,
-  templateUrl: './settings.component.html'
+  templateUrl: './settings.component.html',
 })
 export class SettingsComponent {
-  private readonly ipc = inject(IpcService);
-  readonly msg = signal('');
-  quotesCsv = 'symbol,price,currency,asOf\nBTC,50000,USD,2026-01-01';
-  year = new Date().getFullYear();
+  public readonly msg = signal('');
+  public readonly quotesCsv = 'symbol,price,currency,asOf\nBTC,50000,USD,2026-01-01';
+  public readonly year = new Date().getFullYear();
 
-  async importQuotes() {
+  private readonly ipc = inject(IpcService);
+
+  public async importQuotes(): Promise<void> {
     const res = await this.ipc.import.quotesCsv({ csvContent: this.quotesCsv });
 
     if (res.success) this.msg.set(`Importados: ${JSON.stringify(res.data)}`);
   }
 
-  async syncFx() {
+  public async syncFx(): Promise<void> {
     const res = await this.ipc.import.syncFx('USD', 'BRL', 'USDBRL');
 
     if (res.success) this.msg.set(`FX: ${JSON.stringify(res.data)}`);
   }
 
-  async taxPreview() {
+  public async taxPreview(): Promise<void> {
     const res = await this.ipc.tax.preview({ year: this.year });
 
     if (res.success) this.msg.set(`Tax preview: ${JSON.stringify(res.data)}`);

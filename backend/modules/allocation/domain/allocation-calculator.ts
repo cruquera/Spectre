@@ -43,12 +43,12 @@ export function calculateCategoryDeviations(
     const dev = deviation(real, t.targetPercent);
 
     return {
-  category: t.category,
-  deviation: dev,
-  needsRebalance: needsRebalance(dev, threshold),
-  realPercent: real,
-  targetPercent: t.targetPercent
-};
+      category: t.category,
+      deviation: dev,
+      needsRebalance: needsRebalance(dev, threshold),
+      realPercent: real,
+      targetPercent: t.targetPercent,
+    };
   });
 }
 
@@ -64,13 +64,13 @@ export function calculateAssetDeviations(
     const sign = dev >= 0 ? '+' : '';
 
     return {
-  assetId: t.assetId,
-  deviation: dev,
-  message: `${t.symbol} est?? ${sign}${round2(dev)}% em rela????o ?? aloca????o ideal na categoria`,
-  needsRebalance: needsRebalance(dev, threshold),
-  realPercent: real,
-  symbol: t.symbol,
-  targetPercent: t.targetPercent
-};
+      assetId: t.assetId,
+      deviation: dev,
+      message: `${t.symbol} est?? ${sign}${round2(dev)}% em rela????o ?? aloca????o ideal na categoria`,
+      needsRebalance: needsRebalance(dev, threshold),
+      realPercent: real,
+      symbol: t.symbol,
+      targetPercent: t.targetPercent,
+    };
   });
 }

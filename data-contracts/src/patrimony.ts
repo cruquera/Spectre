@@ -5,7 +5,7 @@ export const patrimonySnapshotSchema = z.object({
   currency: z.string(),
   id: z.string(),
   portfolioId: z.string(),
-  totalValue: z.number()
+  totalValue: z.number(),
 });
 
 export const captureSnapshotSchema = z.object({

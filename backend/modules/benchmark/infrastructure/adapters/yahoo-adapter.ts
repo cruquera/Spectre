@@ -2,9 +2,9 @@ import type { BenchmarkDataPoint, BenchmarkRequest } from '../../domain/benchmar
 
 /** Mock-friendly adapter ??? production fetches Yahoo Finance public API */
 export class YahooFinanceAdapter {
-  readonly source = 'YAHOO';
+  public readonly source = 'YAHOO';
 
-  fetch(request: BenchmarkRequest): Promise<BenchmarkDataPoint[]> {
+  public fetch(request: BenchmarkRequest): Promise<BenchmarkDataPoint[]> {
     const days = periodToDays(request.period);
     const points: BenchmarkDataPoint[] = [];
     const base = 100;
@@ -25,13 +25,13 @@ export class YahooFinanceAdapter {
 
 function periodToDays(period: BenchmarkRequest['period']): number {
   const map: Record<string, number> = {
-  '1M': 30,
-  '1Y': 365,
-  '3M': 90,
-  '5Y': 365 * 5,
-  '6M': 180,
-  MAX: 365 * 10
-};
+    '1M': 30,
+    '1Y': 365,
+    '3M': 90,
+    '5Y': 365 * 5,
+    '6M': 180,
+    MAX: 365 * 10,
+  };
 
   return map[period] ?? 365;
 }

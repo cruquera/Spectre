@@ -1,35 +1,36 @@
+import type { TaxRepository } from './tax-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
+import type { TaxPreview, TaxReport } from '../domain/tax-report.js';
 
-/** Phase 9 ??? base structure for future IR Brasil module */
 export class TaxService {
-  constructor(private readonly ctx: AppContext) {}
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly repo: TaxRepository,
+  ) {}
 
-  async generatePreview(year: number) {
+  public async generatePreview(year: number): Promise<Result<{ preview: TaxPreview; report: TaxReport }, never>> {
     const db = this.ctx.getUserClient();
     const sells = await db.transaction.findMany({
-      where: { type: 'SELL', tradeDate: { gte: new Date(`${year}-01-01`), lte: new Date(`${year}-12-31`) } },
       include: { asset: true },
+      where: { tradeDate: { gte: new Date(`${year}-01-01`), lte: new Date(`${year}-12-31`) }, type: 'SELL' },
     });
-    const preview = {
-  message: 'M??dulo IR completo em fase posterior. Preview baseado em vendas.',
-  sellCount: sells.length,
-  year
-};
-    const report = await db.taxReport.create({
-      data: {
-  data: JSON.stringify(preview),
-  reportType: 'PREVIEW',
-  year
-},
+    const preview: TaxPreview = {
+      message: 'Módulo IR completo em fase posterior. Preview baseado em vendas.',
+      sellCount: sells.length,
+      year,
+    };
+    const report = await this.repo.createReport({
+      data: JSON.stringify(preview),
+      reportType: 'PREVIEW',
+      year,
     });
 
-    return ok({ report, preview });
+    return ok({ preview, report });
   }
 
-  async listReports() {
-    const db = this.ctx.getUserClient();
-    const items = await db.taxReport.findMany({ orderBy: { year: 'desc' } });
+  public async listReports(): Promise<Result<TaxReport[], never>> {
+    const items = await this.repo.listReports();
 
     return ok(items);
   }

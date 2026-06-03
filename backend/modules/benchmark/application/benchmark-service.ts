@@ -1,6 +1,7 @@
+import type { BenchmarkRepository } from './benchmark-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
-import type { BenchmarkRequest } from '../domain/benchmark-request.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
+import type { BenchmarkDataPoint, BenchmarkRequest } from '../domain/benchmark-request.js';
 import { BcbAdapter } from '../infrastructure/adapters/bcb-adapter.js';
 import { IbgeAdapter } from '../infrastructure/adapters/ibge-adapter.js';
 import { YahooFinanceAdapter } from '../infrastructure/adapters/yahoo-adapter.js';
@@ -10,74 +11,56 @@ export class BenchmarkService {
   private readonly bcb = new BcbAdapter();
   private readonly ibge = new IbgeAdapter();
 
-  constructor(private readonly ctx: AppContext) {}
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly repo: BenchmarkRepository,
+  ) {}
 
-  async sync(request: BenchmarkRequest) {
-    const db = this.ctx.getBenchmarkClient();
+  public async sync(request: BenchmarkRequest): Promise<Result<{ count: number; symbol: string }, never>> {
     const source = request.source ?? 'YAHOO';
     const points = await this.fetchFromSource(request, source);
 
-    const series = await db.benchmarkSeries.upsert({
-      where: {
-        symbol_source_benchmarkType: {
-  benchmarkType: request.benchmarkType,
-  source,
-  symbol: request.ticker
-},
-      },
-      create: {
-  benchmarkType: request.benchmarkType,
-  source,
-  symbol: request.ticker
-},
-      update: {},
+    const series = await this.repo.upsertSeries({
+      benchmarkType: request.benchmarkType,
+      source,
+      symbol: request.ticker,
     });
 
     for (const p of points) {
-      await db.benchmarkDataPoint.upsert({
-        where: {
-          seriesId_date: { seriesId: series.id, date: p.date },
-        },
-        create: { seriesId: series.id, date: p.date, value: p.value },
-        update: { value: p.value },
+      await this.repo.upsertDataPoint({
+        date: p.date,
+        seriesId: series.id,
+        value: p.value,
       });
     }
 
-    await db.syncJob.create({
-      data: { seriesId: series.id, lastSyncAt: new Date(), status: 'OK' },
+    await this.repo.createSyncJob({
+      lastSyncAt: new Date(),
+      seriesId: series.id,
+      status: 'OK',
     });
 
-    return ok({ symbol: request.ticker, count: points.length });
+    return ok({ count: points.length, symbol: request.ticker });
   }
 
-  async listCached(request: BenchmarkRequest) {
-    const db = this.ctx.getBenchmarkClient();
+  public async listCached(request: BenchmarkRequest): Promise<Result<{ benchmarkType: string; dataPoints: Array<{ date: string; value: number }>; source: string; symbol: string } | null, never>> {
     const source = request.source ?? 'YAHOO';
-    const series = await db.benchmarkSeries.findUnique({
-      where: {
-        symbol_source_benchmarkType: {
-  benchmarkType: request.benchmarkType,
-  source,
-  symbol: request.ticker
-},
-      },
-      include: { dataPoints: { orderBy: { date: 'asc' } } },
-    });
+    const series = await this.repo.findSeriesWithDataPoints(request.ticker, source, request.benchmarkType);
 
     if (!series) return ok(null);
 
     return ok({
-  benchmarkType: series.benchmarkType,
-  dataPoints: series.dataPoints.map((d) => ({
-  date: d.date.toISOString(),
-  value: d.value
-})),
-  source: series.source,
-  symbol: series.symbol
-});
+      benchmarkType: series.benchmarkType,
+      dataPoints: series.dataPoints.map((d) => ({
+        date: d.date.toISOString(),
+        value: d.value,
+      })),
+      source: series.source,
+      symbol: series.symbol,
+    });
   }
 
-  private async fetchFromSource(request: BenchmarkRequest, source: string) {
+  private async fetchFromSource(request: BenchmarkRequest, source: string): Promise<BenchmarkDataPoint[]> {
     switch (source) {
       case 'BCB':
         return this.bcb.fetch(request);

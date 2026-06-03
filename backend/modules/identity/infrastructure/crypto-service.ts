@@ -4,21 +4,21 @@ import fs from 'node:fs/promises';
 import argon2 from 'argon2';
 
 export class CryptoService {
-  async hashPassword(password: string): Promise<string> {
+  public async hashPassword(password: string): Promise<string> {
     return argon2.hash(password, { type: argon2.argon2id });
   }
 
-  async verifyPassword(hash: string, password: string): Promise<boolean> {
+  public async verifyPassword(hash: string, password: string): Promise<boolean> {
     return argon2.verify(hash, password);
   }
 
-  async deriveDbKey(password: string, saltPath: string): Promise<string> {
+  public async deriveDbKey(password: string, saltPath: string): Promise<string> {
     const salt = await this.getOrCreateSalt(saltPath);
     const raw = await argon2.hash(password, {
-  raw: true,
-  salt: Buffer.from(salt, 'hex'),
-  type: argon2.argon2id
-});
+      raw: true,
+      salt: Buffer.from(salt, 'hex'),
+      type: argon2.argon2id,
+    });
 
     return Buffer.from(raw).toString('hex').slice(0, 64);
   }

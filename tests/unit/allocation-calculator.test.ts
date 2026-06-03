@@ -22,19 +22,19 @@ describe('AllocationCalculator', () => {
     const result = calculateAssetDeviations(
       [
         {
-  assetId: '1',
-  category: 'CRYPTO',
-  symbol: 'BTC',
-  targetPercent: 50,
-  value: 70
-},
+          assetId: '1',
+          category: 'CRYPTO',
+          symbol: 'BTC',
+          targetPercent: 50,
+          value: 70,
+        },
         {
-  assetId: '2',
-  category: 'CRYPTO',
-  symbol: 'ETH',
-  targetPercent: 50,
-  value: 30
-},
+          assetId: '2',
+          category: 'CRYPTO',
+          symbol: 'ETH',
+          targetPercent: 50,
+          value: 30,
+        },
       ],
       { CRYPTO: 100 },
       5,

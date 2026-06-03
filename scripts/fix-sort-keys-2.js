@@ -21,7 +21,7 @@ function findObjectRange(lines, line){
   return null;
 }
 function extractBlockRange(lines, startLine, startCol){
-  let depth=0; let inStr=null; let escaped=false; let startIdx = -1;
+  let depth=0; let inStr=null; let escaped=false;
   for(let l=startLine;l<lines.length;l++){
     const line = lines[l];
     for(let c=(l===startLine?startCol:0); c<line.length;c++){
@@ -32,7 +32,7 @@ function extractBlockRange(lines, startLine, startCol){
         continue;
       }
       if(ch==='"' || ch==="'" || ch==='`'){ inStr=ch; escaped=false; continue; }
-      if(ch==='{'){ if(depth===0) startIdx = (l<<16)|c; depth++; }
+      if(ch==='{'){ depth++; }
       else if(ch==='}'){ depth--; if(depth===0){ const endLine=l; const endCol=c; return {startLine,startCol,endLine,endCol}; }}
     }
   }
@@ -42,7 +42,7 @@ function parseProperties(block){
   // block includes braces
   const inner = block.slice(block.indexOf('{')+1, block.lastIndexOf('}'));
   const props = [];
-  let i=0; const N=inner.length; let inStr=null, escaped=false, depth=0; let keyStart=-1; let keyEnd=-1; 
+  let i=0; const N=inner.length; let inStr=null, escaped=false, depth=0;
   while(i<N){
     const ch=inner[i];
     if(inStr){ if(!escaped && ch===inStr){ inStr=null; } escaped = !escaped && ch==='\\'; i++; continue; }

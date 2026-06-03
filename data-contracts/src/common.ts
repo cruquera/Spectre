@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-export const ipcResultSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
+export const ipcResultSchema = <T extends z.ZodTypeAny>(dataSchema: T): z.ZodDiscriminatedUnion =>
   z.discriminatedUnion('success', [
-    z.object({ success: z.literal(true), data: dataSchema }),
+    z.object({ data: dataSchema, success: z.literal(true) }),
     z.object({
-      success: z.literal(false),
       error: z.object({ code: z.string(), message: z.string() }),
+      success: z.literal(false),
     }),
   ]);
 
@@ -16,7 +16,7 @@ export type IpcResult<T> =
 export const healthcheckResponseSchema = z.object({
   status: z.literal('ok'),
   timestamp: z.string(),
-  version: z.string()
+  version: z.string(),
 });
 
 export type HealthcheckResponse = z.infer<typeof healthcheckResponseSchema>;

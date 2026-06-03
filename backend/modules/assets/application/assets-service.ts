@@ -1,31 +1,29 @@
+import type { AssetRepository } from './asset-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
-import { ok } from '../../../shared/kernel/result.js';
-
-type AssetCategory = 'CRYPTO' | 'FIXED_INCOME' | 'VARIABLE_INCOME' | 'REAL_ESTATE';
+import { type Result, ok } from '../../../shared/kernel/result.js';
+import type { Asset, AssetCategory } from '../domain/asset.js';
 
 export class AssetsService {
-  constructor(private readonly ctx: AppContext) {}
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly assetRepo: AssetRepository,
+  ) {}
 
-  async list(category?: AssetCategory) {
-    const db = this.ctx.getUserClient();
-    const items = await db.asset.findMany({
-      where: category ? { category } : undefined,
-      orderBy: { symbol: 'asc' },
-    });
+  public async list(category?: AssetCategory): Promise<Result<Asset[], never>> {
+    const assets = await this.assetRepo.list(category);
 
-    return ok(items);
+    return ok(assets);
   }
 
-  async create(data: {
+  public async create(data: {
     symbol: string;
     name: string;
     assetType: string;
     category: AssetCategory;
     currency: string;
-  }) {
-    const db = this.ctx.getUserClient();
-    const item = await db.asset.create({ data });
+  }): Promise<Result<Asset, never>> {
+    const asset = await this.assetRepo.create(data);
 
-    return ok(item);
+    return ok(asset);
   }
 }

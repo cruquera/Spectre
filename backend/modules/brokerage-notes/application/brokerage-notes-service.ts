@@ -2,26 +2,30 @@ import { createHash, randomUUID } from 'node:crypto';
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 
+import type { BrokerageNoteRepository } from './brokerage-note-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
 import { getUserAttachmentsPath } from '../../../shared/database/paths.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
+import type { BrokerageNote, BrokerageNoteOperation } from '../domain/brokerage-note.js';
 
 export class BrokerageNotesService {
-  constructor(private readonly ctx: AppContext) {}
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly repo: BrokerageNoteRepository,
+  ) {}
 
-  async list() {
-    const db = this.ctx.getUserClient();
-    const items = await db.brokerageNote.findMany({ orderBy: { noteDate: 'desc' } });
+  public async list(): Promise<Result<BrokerageNote[], never>> {
+    const items = await this.repo.list();
 
     return ok(items);
   }
 
-  async register(
+  public async register(
     brokerId: string,
     noteDate: string,
     fileName: string,
     base64Content: string,
-  ) {
+  ): Promise<Result<BrokerageNote, never>> {
     const session = this.ctx.requireSession();
     const buffer = Buffer.from(base64Content, 'base64');
     const hash = createHash('sha256').update(buffer).digest('hex');
@@ -38,30 +42,24 @@ export class BrokerageNotesService {
 
     await fs.writeFile(absPath, buffer);
 
-    const db = this.ctx.getUserClient();
-    const note = await db.brokerageNote.create({
-      data: {
-  brokerId,
-  hashSha256: hash,
-  noteDate: new Date(noteDate),
-  parsedStatus: 'MANUAL',
-  relativePath: relPath.replace(/\\/g, '/')
-},
+    const note = await this.repo.register({
+      brokerId,
+      hashSha256: hash,
+      noteDate: new Date(noteDate),
+      parsedStatus: 'MANUAL',
+      relativePath: relPath.replace(/\\/g, '/'),
     });
 
     return ok(note);
   }
 
-  async linkOperation(noteId: string, transactionId: string, description?: string) {
-    const db = this.ctx.getUserClient();
-    const op = await db.brokerageNoteOperation.create({
-      data: { noteId, transactionId, description },
-    });
+  public async linkOperation(noteId: string, transactionId: string, description?: string): Promise<Result<BrokerageNoteOperation, never>> {
+    const op = await this.repo.linkOperation(noteId, transactionId, description);
 
     return ok(op);
   }
 
-  validatePath(relativePath: string): boolean {
+  public validatePath(relativePath: string): boolean {
     const normalized = path.normalize(relativePath);
 
     return !normalized.includes('..') && !path.isAbsolute(normalized);

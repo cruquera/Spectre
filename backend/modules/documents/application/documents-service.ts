@@ -2,28 +2,30 @@ import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
+import type { DocumentRepository } from './document-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
 import { getUserAttachmentsPath } from '../../../shared/database/paths.js';
-import { ok } from '../../../shared/kernel/result.js';
+import { type Result, ok } from '../../../shared/kernel/result.js';
+import type { FinancialDocument } from '../domain/financial-document.js';
 
 export class DocumentsService {
-  constructor(private readonly ctx: AppContext) {}
+  public constructor(
+    private readonly ctx: AppContext,
+    private readonly repo: DocumentRepository,
+  ) {}
 
-  async list() {
-    const db = this.ctx.getUserClient();
-    const items = await db.financialDocument.findMany({
-      orderBy: { documentDate: 'desc' },
-    });
+  public async list(): Promise<Result<FinancialDocument[], never>> {
+    const items = await this.repo.list();
 
     return ok(items);
   }
 
-  async register(
+  public async register(
     documentType: string,
     documentDate: string,
     fileName: string,
     base64Content: string,
-  ) {
+  ): Promise<Result<FinancialDocument, never>> {
     const session = this.ctx.requireSession();
     const buffer = Buffer.from(base64Content, 'base64');
     const hash = createHash('sha256').update(buffer).digest('hex');
@@ -38,14 +40,11 @@ export class DocumentsService {
     await fs.mkdir(absDir, { recursive: true });
     await fs.writeFile(path.join(absDir, path.basename(relPath)), buffer);
 
-    const db = this.ctx.getUserClient();
-    const doc = await db.financialDocument.create({
-      data: {
-  documentDate: new Date(documentDate),
-  documentType,
-  hashSha256: hash,
-  relativePath: relPath.replace(/\\/g, '/')
-},
+    const doc = await this.repo.register({
+      documentDate: new Date(documentDate),
+      documentType,
+      hashSha256: hash,
+      relativePath: relPath.replace(/\\/g, '/'),
     });
 
     return ok(doc);

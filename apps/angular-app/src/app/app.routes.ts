@@ -4,78 +4,78 @@ import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
-  loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
-  path: 'auth'
-},
+    loadChildren: () => import('./features/auth/auth.routes').then((m) => m.AUTH_ROUTES),
+    path: 'auth',
+  },
   {
-  canActivate: [authGuard],
-  children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    canActivate: [authGuard],
+    children: [
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
-  path: 'dashboard'
-},
+        path: 'dashboard',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/institutions/institutions.component').then((m) => m.InstitutionsComponent),
-  path: 'institutions'
-},
+        path: 'institutions',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/accounts/accounts.component').then((m) => m.AccountsComponent),
-  path: 'accounts'
-},
+        path: 'accounts',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/assets/assets.component').then((m) => m.AssetsComponent),
-  path: 'assets'
-},
+        path: 'assets',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/portfolio/portfolio.component').then((m) => m.PortfolioComponent),
-  path: 'portfolio'
-},
+        path: 'portfolio',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/allocation/allocation.component').then((m) => m.AllocationComponent),
-  path: 'allocation'
-},
+        path: 'allocation',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/contributions/contributions.component').then((m) => m.ContributionsComponent),
-  path: 'contributions'
-},
+        path: 'contributions',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/rebalancing/rebalancing.component').then((m) => m.RebalancingComponent),
-  path: 'rebalancing'
-},
+        path: 'rebalancing',
+      },
       {
-  ),
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/brokerage-notes/brokerage-notes.component').then(
             (m) => m.BrokerageNotesComponent,
-  path: 'brokerage-notes'
-},
+          ),
+        path: 'brokerage-notes',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/patrimony/patrimony.component').then((m) => m.PatrimonyComponent),
-  path: 'patrimony'
-},
+        path: 'patrimony',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/analytics/analytics.component').then((m) => m.AnalyticsComponent),
-  path: 'analytics'
-},
+        path: 'analytics',
+      },
       {
-  loadComponent: () =>
+        loadComponent: () =>
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
-  path: 'settings'
-},
+        path: 'settings',
+      },
     ],
-  loadComponent: () => import('./core/layout/shell.component').then((m) => m.ShellComponent),
-  path: ''
-},
+    loadComponent: () => import('./core/layout/shell.component').then((m) => m.ShellComponent),
+    path: '',
+  },
   { path: '**', redirectTo: 'auth' },
 ];
