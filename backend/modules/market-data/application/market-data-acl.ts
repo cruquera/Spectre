@@ -1,8 +1,8 @@
 import type { AppContext } from '../../../shared/app-context.js';
-import { BenchmarkService } from '../../benchmark/application/benchmark-service.js';
 import { ok } from '../../../shared/kernel/result.js';
+import { BenchmarkService } from '../../benchmark/application/benchmark-service.js';
 
-/** Anti-Corruption Layer — only passes public benchmark DTOs */
+/** Anti-Corruption Layer ??? only passes public benchmark DTOs */
 export class MarketDataAcl {
   private readonly benchmark: BenchmarkService;
 
@@ -12,21 +12,24 @@ export class MarketDataAcl {
 
   async quoteFromBenchmark(ticker: string, assetId: string) {
     const result = await this.benchmark.listCached({
-      ticker,
-      period: '1M',
-      benchmarkType: 'PRICE',
-      source: 'YAHOO',
-    });
+  benchmarkType: 'PRICE',
+  period: '1M',
+  source: 'YAHOO',
+  ticker
+});
+
     if (!result.ok || !result.value) {
       return ok(null);
     }
     const latest = result.value.dataPoints.at(-1);
+
     if (!latest) return ok(null);
+
     return ok({
-      assetId,
-      price: latest.value,
-      asOf: latest.date,
-      source: 'BENCHMARK' as const,
-    });
+  asOf: latest.date,
+  assetId,
+  price: latest.value,
+  source: 'BENCHMARK' as const
+});
   }
 }

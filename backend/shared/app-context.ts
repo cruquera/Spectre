@@ -1,7 +1,7 @@
-import type { PrismaClient as UserPrismaClient } from '../../node_modules/.prisma/user-client/index.js';
 import type { PrismaClient as BenchmarkPrismaClient } from '../../node_modules/.prisma/benchmark-client/index.js';
+import type { PrismaClient as UserPrismaClient } from '../../node_modules/.prisma/user-client/index.js';
 
-export interface SessionState {
+export type SessionState = {
   slug: string;
   displayName: string;
 }
@@ -10,7 +10,7 @@ export class AppContext {
   private userClient: UserPrismaClient | null = null;
   private benchmarkClient: BenchmarkPrismaClient | null = null;
   private session: SessionState | null = null;
-  private dataRoot: string;
+  private readonly dataRoot: string;
 
   constructor(dataRoot: string) {
     this.dataRoot = dataRoot;
@@ -32,6 +32,7 @@ export class AppContext {
     if (!this.userClient) {
       throw new Error('Database not unlocked. Please login.');
     }
+
     return this.userClient;
   }
 
@@ -43,6 +44,7 @@ export class AppContext {
     if (!this.benchmarkClient) {
       throw new Error('Benchmark database not initialized.');
     }
+
     return this.benchmarkClient;
   }
 
@@ -54,6 +56,7 @@ export class AppContext {
     if (!this.session) {
       throw new Error('No active session');
     }
+
     return this.session;
   }
 }

@@ -12,6 +12,7 @@ describe('AllocationCalculator', () => {
       ],
       5,
     );
+
     expect(result[0].realPercent).toBe(30);
     expect(result[0].deviation).toBe(10);
     expect(result[0].needsRebalance).toBe(true);
@@ -21,23 +22,24 @@ describe('AllocationCalculator', () => {
     const result = calculateAssetDeviations(
       [
         {
-          assetId: '1',
-          symbol: 'BTC',
-          category: 'CRYPTO',
-          targetPercent: 50,
-          value: 70,
-        },
+  assetId: '1',
+  category: 'CRYPTO',
+  symbol: 'BTC',
+  targetPercent: 50,
+  value: 70
+},
         {
-          assetId: '2',
-          symbol: 'ETH',
-          category: 'CRYPTO',
-          targetPercent: 50,
-          value: 30,
-        },
+  assetId: '2',
+  category: 'CRYPTO',
+  symbol: 'ETH',
+  targetPercent: 50,
+  value: 30
+},
       ],
       { CRYPTO: 100 },
       5,
     );
+
     expect(result[0].realPercent).toBe(70);
     expect(result[0].needsRebalance).toBe(true);
     expect(result[0].message).toContain('BTC');

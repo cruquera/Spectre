@@ -1,16 +1,14 @@
-import { BenchmarkService } from '../../backend/modules/benchmark/application/benchmark-service';
-import { AppContext } from '../../backend/shared/app-context';
-import path from 'node:path';
-import os from 'node:os';
+// Imports intentionally omitted because this test only exercises request shape validation
 
 describe('Benchmark isolation', () => {
   it('BenchmarkRequest has no user fields', () => {
     const request = {
-      ticker: 'CDI',
-      period: '1Y' as const,
-      benchmarkType: 'RATE',
-      source: 'BCB' as const,
-    };
+  benchmarkType: 'RATE',
+  period: '1Y' as const,
+  source: 'BCB' as const,
+  ticker: 'CDI'
+};
+
     expect(request).not.toHaveProperty('userId');
     expect(request).not.toHaveProperty('portfolioId');
     expect(Object.keys(request).sort()).toEqual(

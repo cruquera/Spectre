@@ -8,6 +8,7 @@ export class IpcService {
     if (!window.spectre) {
       throw new Error('Spectre API not available (run inside Electron)');
     }
+
     return window.spectre;
   }
 

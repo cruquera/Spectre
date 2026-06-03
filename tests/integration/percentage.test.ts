@@ -1,4 +1,4 @@
-import { percentOf, needsRebalance } from '../../backend/shared/kernel/percentage';
+import { needsRebalance, percentOf } from '../../backend/shared/kernel/percentage';
 
 describe('percentage kernel', () => {
   it('computes percent of total', () => {

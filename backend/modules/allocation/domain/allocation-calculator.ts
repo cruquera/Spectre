@@ -1,12 +1,12 @@
 import { deviation, needsRebalance, percentOf, round2 } from '../../../shared/kernel/percentage.js';
 
-export interface CategoryTarget {
+export type CategoryTarget = {
   category: string;
   targetPercent: number;
   value: number;
 }
 
-export interface AssetTarget {
+export type AssetTarget = {
   assetId: string;
   symbol: string;
   category: string;
@@ -14,7 +14,7 @@ export interface AssetTarget {
   value: number;
 }
 
-export interface AllocationDeviation {
+export type AllocationDeviation = {
   category: string;
   targetPercent: number;
   realPercent: number;
@@ -22,7 +22,7 @@ export interface AllocationDeviation {
   needsRebalance: boolean;
 }
 
-export interface AssetDeviation {
+export type AssetDeviation = {
   assetId: string;
   symbol: string;
   targetPercent: number;
@@ -37,16 +37,18 @@ export function calculateCategoryDeviations(
   threshold: number,
 ): AllocationDeviation[] {
   const total = targets.reduce((s, t) => s + t.value, 0);
+
   return targets.map((t) => {
     const real = percentOf(t.value, total);
     const dev = deviation(real, t.targetPercent);
+
     return {
-      category: t.category,
-      targetPercent: t.targetPercent,
-      realPercent: real,
-      deviation: dev,
-      needsRebalance: needsRebalance(dev, threshold),
-    };
+  category: t.category,
+  deviation: dev,
+  needsRebalance: needsRebalance(dev, threshold),
+  realPercent: real,
+  targetPercent: t.targetPercent
+};
   });
 }
 
@@ -60,14 +62,15 @@ export function calculateAssetDeviations(
     const real = percentOf(t.value, catTotal);
     const dev = deviation(real, t.targetPercent);
     const sign = dev >= 0 ? '+' : '';
+
     return {
-      assetId: t.assetId,
-      symbol: t.symbol,
-      targetPercent: t.targetPercent,
-      realPercent: real,
-      deviation: dev,
-      message: `${t.symbol} está ${sign}${round2(dev)}% em relação à alocação ideal na categoria`,
-      needsRebalance: needsRebalance(dev, threshold),
-    };
+  assetId: t.assetId,
+  deviation: dev,
+  message: `${t.symbol} est?? ${sign}${round2(dev)}% em rela????o ?? aloca????o ideal na categoria`,
+  needsRebalance: needsRebalance(dev, threshold),
+  realPercent: real,
+  symbol: t.symbol,
+  targetPercent: t.targetPercent
+};
   });
 }

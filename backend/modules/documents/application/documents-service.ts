@@ -1,6 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import type { AppContext } from '../../../shared/app-context.js';
 import { getUserAttachmentsPath } from '../../../shared/database/paths.js';
 import { ok } from '../../../shared/kernel/result.js';
@@ -13,6 +14,7 @@ export class DocumentsService {
     const items = await db.financialDocument.findMany({
       orderBy: { documentDate: 'desc' },
     });
+
     return ok(items);
   }
 
@@ -32,18 +34,20 @@ export class DocumentsService {
       getUserAttachmentsPath(this.ctx.getDataRoot(), session.slug),
       relDir,
     );
+
     await fs.mkdir(absDir, { recursive: true });
     await fs.writeFile(path.join(absDir, path.basename(relPath)), buffer);
 
     const db = this.ctx.getUserClient();
     const doc = await db.financialDocument.create({
       data: {
-        hashSha256: hash,
-        relativePath: relPath.replace(/\\/g, '/'),
-        documentType,
-        documentDate: new Date(documentDate),
-      },
+  documentDate: new Date(documentDate),
+  documentType,
+  hashSha256: hash,
+  relativePath: relPath.replace(/\\/g, '/')
+},
     });
+
     return ok(doc);
   }
 }

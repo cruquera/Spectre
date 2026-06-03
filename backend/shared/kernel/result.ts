@@ -3,13 +3,13 @@ export type Result<T, E = AppError> =
   | { ok: false; error: E };
 
 export class AppError extends Error {
-  constructor(
-    public readonly code: string,
-    message: string,
   ) {
     super(message);
     this.name = 'AppError';
-  }
+  },
+  constructor(
+    public readonly code: string,
+  message: string
 }
 
 export const ok = <T>(value: T): Result<T, never> => ({ ok: true, value });
@@ -19,8 +19,14 @@ export function toIpcResult<T>(result: Result<T, AppError>) {
   if (result.ok) {
     return { success: true as const, data: result.value };
   }
+
   return {
     success: false as const,
-    error: { code: result.error.code, message: result.error.message },
+    // Narrow the union explicitly for the error branch
+    error: (() => {
+      const r = result;
+
+      return { code: r.error.code, message: r.error.message };
+    })(),
   };
 }

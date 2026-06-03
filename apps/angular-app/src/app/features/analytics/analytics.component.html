@@ -1,0 +1,23 @@
+<h2 class="text-2xl font-bold mb-4">Analytics & Benchmark</h2>
+<form class="flex flex-wrap gap-2 mb-4" [formGroup]="form" (ngSubmit)="sync()">
+  <input formControlName="ticker" placeholder="Ticker" class="px-3 py-2 rounded bg-slate-800 border border-slate-600" />
+  <select formControlName="source" class="px-3 py-2 rounded bg-slate-800 border border-slate-600">
+    <option value="YAHOO">Yahoo</option>
+    <option value="BCB">BCB</option>
+    <option value="IBGE">IBGE</option>
+  </select>
+  <button type="submit" class="px-4 py-2 rounded bg-spectre-accent text-sm">Sync benchmark</button>
+  <button type="button" class="px-4 py-2 rounded bg-slate-700 text-sm" (click)="loadCache()">Ver cache</button>
+</form>
+@if (series()) {
+  <p class="text-sm text-slate-400 mb-2">{{ series()?.dataPoints?.length }} pontos em cache</p>
+  <div class="h-48 bg-spectre-surface rounded border border-slate-700 flex items-end gap-0.5 p-2">
+    @for (p of chartBars(); track p.date) {
+      <div
+        class="bg-spectre-accent flex-1 min-w-[2px]"
+        [style.height.%]="p.height"
+        [title]="p.date + ': ' + p.value"
+      ></div>
+    }
+  </div>
+}

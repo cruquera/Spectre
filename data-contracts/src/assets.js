@@ -9,18 +9,18 @@ exports.assetCategorySchema = zod_1.z.enum([
     'REAL_ESTATE',
 ]);
 exports.assetSchema = zod_1.z.object({
-    id: zod_1.z.string(),
-    symbol: zod_1.z.string(),
-    name: zod_1.z.string(),
-    assetType: zod_1.z.string(),
-    category: exports.assetCategorySchema,
-    currency: zod_1.z.string(),
+  assetType: zod_1.z.string(),
+  category: exports.assetCategorySchema,
+  currency: zod_1.z.string(),
+  id: zod_1.z.string(),
+  name: zod_1.z.string(),
+  symbol: zod_1.z.string()
 });
 exports.createAssetSchema = zod_1.z.object({
-    symbol: zod_1.z.string().min(1),
-    name: zod_1.z.string().min(1),
-    assetType: zod_1.z.string().min(1),
-    category: exports.assetCategorySchema,
-    currency: zod_1.z.string().length(3),
+  assetType: zod_1.z.string().min(1),
+  category: exports.assetCategorySchema,
+  currency: zod_1.z.string().length(3),
+  name: zod_1.z.string().min(1),
+  symbol: zod_1.z.string().min(1)
 });
 //# sourceMappingURL=assets.js.map

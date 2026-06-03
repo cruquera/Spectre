@@ -8,11 +8,8 @@ export class WeightedRebalanceStrategy implements ContributionStrategy {
   readonly key = 'weighted-rebalance';
 
   evaluate(context: StrategyContext): StrategySuggestion[] {
-    const eligible = context.deviations.filter(
-      (d) =>
-        context.blockAssetIds.includes(d.assetId) &&
-        (d.needsRebalance || context.blockAssetIds.length > 0),
-    );
+  );
+
     if (eligible.length === 0) {
       return [];
     }
@@ -32,12 +29,17 @@ export class WeightedRebalanceStrategy implements ContributionStrategy {
         suggestedAmount < context.minLot && suggestedAmount > 0
           ? 0
           : suggestedAmount;
+
       return {
         assetId: w.assetId,
         symbol: w.symbol,
         suggestedAmount: adjusted,
         rationale: `Rebalanceamento ponderado (peso ${w.weight.toFixed(2)})`,
       };
-    }).filter((s) => s.suggestedAmount > 0);
-  }
+    }).filter((s) => s.suggestedAmount > 0);,
+  const eligible = context.deviations.filter(
+      (d) =>
+        context.blockAssetIds.includes(d.assetId) &&
+        (d.needsRebalance || context.blockAssetIds.length > 0)
+}
 }

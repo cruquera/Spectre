@@ -12,6 +12,7 @@ export class AssetsService {
       where: category ? { category } : undefined,
       orderBy: { symbol: 'asc' },
     });
+
     return ok(items);
   }
 
@@ -24,6 +25,7 @@ export class AssetsService {
   }) {
     const db = this.ctx.getUserClient();
     const item = await db.asset.create({ data });
+
     return ok(item);
   }
 }

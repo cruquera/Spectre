@@ -1,7 +1,7 @@
 import { randomBytes } from 'node:crypto';
 import fs from 'node:fs/promises';
+
 import argon2 from 'argon2';
-import { getUserSaltPath } from '../../../shared/database/paths.js';
 
 export class CryptoService {
   async hashPassword(password: string): Promise<string> {
@@ -15,10 +15,11 @@ export class CryptoService {
   async deriveDbKey(password: string, saltPath: string): Promise<string> {
     const salt = await this.getOrCreateSalt(saltPath);
     const raw = await argon2.hash(password, {
-      type: argon2.argon2id,
-      salt: Buffer.from(salt, 'hex'),
-      raw: true,
-    });
+  raw: true,
+  salt: Buffer.from(salt, 'hex'),
+  type: argon2.argon2id
+});
+
     return Buffer.from(raw).toString('hex').slice(0, 64);
   }
 
@@ -27,8 +28,10 @@ export class CryptoService {
       return (await fs.readFile(saltPath, 'utf-8')).trim();
     } catch {
       const salt = Buffer.from(cryptoRandom(32)).toString('hex');
+
       await fs.mkdir(saltPath.replace(/[^/\\]+$/, ''), { recursive: true });
       await fs.writeFile(saltPath, salt, 'utf-8');
+
       return salt;
     }
   }

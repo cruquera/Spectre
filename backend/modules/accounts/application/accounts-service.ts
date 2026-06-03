@@ -10,6 +10,7 @@ export class AccountsService {
       where: institutionId ? { institutionId } : undefined,
       orderBy: { name: 'asc' },
     });
+
     return ok(items);
   }
 
@@ -18,6 +19,7 @@ export class AccountsService {
     const item = await db.account.create({
       data: { institutionId, name, currency },
     });
+
     return ok(item);
   }
 }

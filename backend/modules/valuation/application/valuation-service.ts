@@ -1,5 +1,5 @@
 import type { AppContext } from '../../../shared/app-context.js';
-import { convertMoney, type Money } from '../../../shared/kernel/money.js';
+import { type Money, convertMoney } from '../../../shared/kernel/money.js';
 import { ok } from '../../../shared/kernel/result.js';
 
 export class ValuationService {
@@ -27,8 +27,10 @@ export class ValuationService {
         amount: pos.quantity * price,
         currency: quote?.currency ?? pos.costCurrency,
       };
+
       if (value.currency !== baseCurrency) {
         const fx = await this.getFxRate(value.currency, baseCurrency);
+
         if (fx) value = convertMoney(value, fx, baseCurrency);
       }
       total += value.amount;
@@ -44,6 +46,7 @@ export class ValuationService {
       where: { fromCurrency: from, toCurrency: to },
       orderBy: { asOf: 'desc' },
     });
+
     return rate?.rate ?? null;
   }
 }

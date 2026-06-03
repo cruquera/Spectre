@@ -1,8 +1,9 @@
 import { PrismaBetterSQLite3 } from '@prisma/adapter-better-sqlite3';
-import { PrismaClient as UserPrismaClient } from '../../../node_modules/.prisma/user-client/index.js';
-import { PrismaClient as BenchmarkPrismaClient } from '../../../node_modules/.prisma/benchmark-client/index.js';
-import { runUserMigrations, runBenchmarkMigrations } from './migrate.js';
 import Database from 'better-sqlite3';
+
+import { runBenchmarkMigrations, runUserMigrations } from './migrate.js';
+import { PrismaClient as BenchmarkPrismaClient } from '../../../node_modules/.prisma/benchmark-client/index.js';
+import { PrismaClient as UserPrismaClient } from '../../../node_modules/.prisma/user-client/index.js';
 
 export function createEncryptedUserClient(
   dbPath: string,
@@ -11,13 +12,16 @@ export function createEncryptedUserClient(
   runUserMigrations(dbPath);
   const adapter = new PrismaBetterSQLite3({ url: dbPath });
   const client = new UserPrismaClient({ adapter });
+
   void encryptionKey;
+
   return client;
 }
 
 export function createBenchmarkClient(dbPath: string): BenchmarkPrismaClient {
   runBenchmarkMigrations(dbPath);
   const adapter = new PrismaBetterSQLite3({ url: dbPath });
+
   return new BenchmarkPrismaClient({ adapter });
 }
 
@@ -25,6 +29,7 @@ export function createBenchmarkClient(dbPath: string): BenchmarkPrismaClient {
 export function applyEncryptionKey(dbPath: string, encryptionKey: string): void {
   try {
     const db = new Database(dbPath);
+
     db.pragma(`key = '${encryptionKey.replace(/'/g, "''")}'`);
     db.close();
   } catch {

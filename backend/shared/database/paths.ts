@@ -1,4 +1,4 @@
-import path from 'node:path';
+import * as path from 'node:path';
 
 export function getSpectreDataRoot(homeDir: string): string {
   return path.join(homeDir, 'spectre-data');

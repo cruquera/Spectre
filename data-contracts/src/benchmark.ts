@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 export const benchmarkRequestSchema = z.object({
-  ticker: z.string().min(1),
-  period: z.enum(['1M', '3M', '6M', '1Y', '5Y', 'MAX']),
   benchmarkType: z.string(),
+  period: z.enum(['1M', '3M', '6M', '1Y', '5Y', 'MAX']),
   source: z.enum(['YAHOO', 'BCB', 'IBGE']).optional(),
+  ticker: z.string().min(1)
 });
 
 export const benchmarkDataPointSchema = z.object({
@@ -13,10 +13,10 @@ export const benchmarkDataPointSchema = z.object({
 });
 
 export const benchmarkSeriesSchema = z.object({
-  symbol: z.string(),
-  source: z.string(),
   benchmarkType: z.string(),
   dataPoints: z.array(benchmarkDataPointSchema),
+  source: z.string(),
+  symbol: z.string()
 });
 
 export type BenchmarkRequest = z.infer<typeof benchmarkRequestSchema>;

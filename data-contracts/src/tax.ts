@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 export const taxReportSchema = z.object({
-  id: z.string(),
-  year: z.number().int(),
-  reportType: z.string(),
   createdAt: z.string(),
+  id: z.string(),
+  reportType: z.string(),
+  year: z.number().int()
 });
 
 export const generateTaxPreviewSchema = z.object({

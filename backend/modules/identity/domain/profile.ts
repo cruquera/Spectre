@@ -1,11 +1,11 @@
-export interface LocalProfile {
+export type LocalProfile = {
   id: string;
   displayName: string;
   slug: string;
   lastLoginAt: string | null;
 }
 
-export interface ProfileRegistryEntry {
+export type ProfileRegistryEntry = {
   id: string;
   displayName: string;
   slug: string;

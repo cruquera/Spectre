@@ -8,20 +8,20 @@ export const assetCategorySchema = z.enum([
 ]);
 
 export const assetSchema = z.object({
-  id: z.string(),
-  symbol: z.string(),
-  name: z.string(),
   assetType: z.string(),
   category: assetCategorySchema,
   currency: z.string(),
+  id: z.string(),
+  name: z.string(),
+  symbol: z.string()
 });
 
 export const createAssetSchema = z.object({
-  symbol: z.string().min(1),
-  name: z.string().min(1),
   assetType: z.string().min(1),
   category: assetCategorySchema,
   currency: z.string().length(3),
+  name: z.string().min(1),
+  symbol: z.string().min(1)
 });
 
 export type AssetDto = z.infer<typeof assetSchema>;

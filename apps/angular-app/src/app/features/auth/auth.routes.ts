@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { ProfileSelectComponent } from './profile-select.component';
-import { LoginComponent } from './login.component';
+
 import { CreateProfileComponent } from './create-profile.component';
+import { LoginComponent } from './login.component';
+import { ProfileSelectComponent } from './profile-select.component';
 
 export const AUTH_ROUTES: Routes = [
   { path: '', component: ProfileSelectComponent },

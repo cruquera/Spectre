@@ -1,0 +1,15 @@
+<h2 class="text-2xl font-bold mb-4">Notas de corretagem</h2>
+<p class="text-slate-400 text-sm mb-4">v1: upload + metadata. Parser OCR em fase futura.</p>
+<form class="grid gap-2 max-w-lg mb-6" [formGroup]="form" (ngSubmit)="upload()">
+  <input formControlName="brokerId" placeholder="brokerId" class="px-3 py-2 rounded bg-slate-800 border border-slate-600" />
+  <input type="date" formControlName="noteDate" class="px-3 py-2 rounded bg-slate-800 border border-slate-600" />
+  <input type="file" accept=".pdf" (change)="onFile($event)" class="text-sm" />
+  <button type="submit" class="px-4 py-2 rounded bg-spectre-accent text-sm">Registrar nota</button>
+</form>
+<ul class="text-sm space-y-2">
+  @for (n of notes(); track n.id) {
+    <li class="p-3 bg-spectre-surface rounded border border-slate-700">
+      {{ n.noteDate }} — {{ n.relativePath }} ({{ n.parsedStatus }})
+    </li>
+  }
+</ul>

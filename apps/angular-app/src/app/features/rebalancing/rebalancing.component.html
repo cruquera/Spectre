@@ -1,0 +1,9 @@
+<h2 class="text-2xl font-bold mb-4">Rebalanceamento</h2>
+<form class="flex gap-2 mb-4" [formGroup]="form" (ngSubmit)="analyze()">
+  <input formControlName="portfolioId" class="flex-1 px-3 py-2 rounded bg-slate-800 border border-slate-600" />
+  <input type="number" formControlName="threshold" class="w-24 px-3 py-2 rounded bg-slate-800 border border-slate-600" />
+  <button type="submit" class="px-4 py-2 rounded bg-spectre-accent text-sm">Analisar</button>
+</form>
+@if (result()) {
+  <div class="bg-spectre-surface p-4 rounded text-sm"><pre>{{ result() | json }}</pre></div>
+}

@@ -1,10 +1,10 @@
 /** Port for future OCR/PDF parsers per broker */
-export interface BrokerageNoteParserPort {
+export type BrokerageNoteParserPort = {
   readonly brokerKey: string;
   parsePdf(buffer: Buffer): Promise<ParsedBrokerageNote>;
 }
 
-export interface ParsedBrokerageNote {
+export type ParsedBrokerageNote = {
   operations: Array<{
     description: string;
     quantity?: number;
@@ -12,11 +12,11 @@ export interface ParsedBrokerageNote {
   }>;
 }
 
-/** No implementation in v1 — manual entry only */
+/** No implementation in v1 ??? manual entry only */
 export class NoOpBrokerageNoteParser implements BrokerageNoteParserPort {
   readonly brokerKey = 'manual';
 
-  async parsePdf(): Promise<ParsedBrokerageNote> {
-    return { operations: [] };
+  parsePdf(): Promise<ParsedBrokerageNote> {
+    return Promise.resolve({ operations: [] });
   }
 }

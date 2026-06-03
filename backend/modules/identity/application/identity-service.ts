@@ -1,17 +1,18 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+
 import type { AppContext } from '../../../shared/app-context.js';
-import { AppError, ok, err, type Result } from '../../../shared/kernel/result.js';
 import {
+  getUserAttachmentsPath,
   getUserDbPath,
   getUserDir,
   getUserSaltPath,
-  getUserAttachmentsPath,
 } from '../../../shared/database/paths.js';
 import { createEncryptedUserClient } from '../../../shared/database/prisma-factory.js';
 import { seedDefaultStrategies } from '../../../shared/database/seed-defaults.js';
-import { ProfileStore } from '../infrastructure/profile-store.js';
+import { AppError, type Result, err, ok } from '../../../shared/kernel/result.js';
 import { CryptoService } from '../infrastructure/crypto-service.js';
+import { ProfileStore } from '../infrastructure/profile-store.js';
 
 export class IdentityService {
   private readonly profileStore: ProfileStore;
@@ -34,12 +35,14 @@ export class IdentityService {
     try {
       await this.profileStore.ensureDataRoot();
       const existing = await this.profileStore.findBySlug(slug);
+
       if (existing) {
         return err(new AppError('PROFILE_EXISTS', 'Profile slug already exists'));
       }
 
       const entry = await this.profileStore.add(displayName, slug);
       const userDir = getUserDir(this.ctx.getDataRoot(), slug);
+
       await fs.mkdir(userDir, { recursive: true });
       await fs.mkdir(getUserAttachmentsPath(this.ctx.getDataRoot(), slug), {
         recursive: true,
@@ -47,6 +50,7 @@ export class IdentityService {
       await fs.mkdir(path.join(userDir, 'imports'), { recursive: true });
 
       const hash = await this.crypto.hashPassword(password);
+
       await fs.writeFile(
         path.join(userDir, '.password-hash'),
         hash,
@@ -59,6 +63,7 @@ export class IdentityService {
       );
       const dbPath = getUserDbPath(this.ctx.getDataRoot(), slug);
       const client = createEncryptedUserClient(dbPath, dbKey);
+
       await client.$executeRaw`SELECT 1`;
       await client.userProfile.create({
         data: { displayName },
@@ -68,12 +73,8 @@ export class IdentityService {
 
       return ok({ slug: entry.slug });
     } catch (e) {
-      return err(
-        new AppError(
-          'CREATE_PROFILE_FAILED',
-          e instanceof Error ? e.message : 'Unknown error',
-        ),
-      );
+  ),
+  );
     }
   }
 
@@ -83,9 +84,14 @@ export class IdentityService {
   ): Promise<Result<{ displayName: string }, AppError>> {
     try {
       const profile = await this.profileStore.findBySlug(slug);
+
       if (!profile) {
-        return err(new AppError('PROFILE_NOT_FOUND', 'Profile not found'));
-      }
+        return err(new AppError('PROFILE_NOT_FOUND', 'Profile not found'));,
+  e instanceof Error ? e.message : 'Unknown error',
+  return err(
+        new AppError(
+          'CREATE_PROFILE_FAILED'
+}
 
       const hashPath = path.join(
         getUserDir(this.ctx.getDataRoot(), slug),
@@ -93,6 +99,7 @@ export class IdentityService {
       );
       const hash = await fs.readFile(hashPath, 'utf-8');
       const valid = await this.crypto.verifyPassword(hash, password);
+
       if (!valid) {
         return err(new AppError('INVALID_CREDENTIALS', 'Invalid password'));
       }
@@ -103,11 +110,13 @@ export class IdentityService {
       );
       const dbPath = getUserDbPath(this.ctx.getDataRoot(), slug);
       const client = createEncryptedUserClient(dbPath, dbKey);
+
       await client.$connect();
       await seedDefaultStrategies(client);
 
       try {
         const prev = this.ctx.getUserClient();
+
         await prev.$disconnect();
       } catch {
         // no previous session
@@ -130,12 +139,14 @@ export class IdentityService {
   async logout(): Promise<Result<void, AppError>> {
     try {
       const client = this.ctx.getUserClient();
+
       await client.$disconnect();
     } catch {
       // not logged in
     }
     this.ctx.setUserClient(null);
     this.ctx.setSession(null);
+
     return ok(undefined);
   }
 }

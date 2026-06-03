@@ -1,4 +1,4 @@
-export interface StrategyContext {
+export type StrategyContext = {
   totalAmount: number;
   currency: string;
   deviations: Array<{ assetId: string; symbol: string; deviation: number; needsRebalance: boolean }>;
@@ -8,14 +8,14 @@ export interface StrategyContext {
   brokerageCost: number;
 }
 
-export interface StrategySuggestion {
+export type StrategySuggestion = {
   assetId: string;
   symbol: string;
   suggestedAmount: number;
   rationale: string;
 }
 
-export interface ContributionStrategy {
+export type ContributionStrategy = {
   readonly key: string;
   evaluate(context: StrategyContext): StrategySuggestion[];
 }

@@ -13,15 +13,17 @@ export class PatrimonyService {
     const db = this.ctx.getUserClient();
     const portfolio = await db.portfolio.findUniqueOrThrow({ where: { id: portfolioId } });
     const val = await this.valuation.getPortfolioValue(portfolioId, portfolio.baseCurrency);
+
     if (!val.ok) throw new Error('Valuation failed');
     const snap = await db.patrimonySnapshot.create({
       data: {
-        portfolioId,
-        totalValue: val.value.total,
-        currency: val.value.currency,
-        breakdown: JSON.stringify(val.value.breakdown),
-      },
+  breakdown: JSON.stringify(val.value.breakdown),
+  currency: val.value.currency,
+  portfolioId,
+  totalValue: val.value.total
+},
     });
+
     return ok(snap);
   }
 
@@ -31,6 +33,7 @@ export class PatrimonyService {
       where: { portfolioId },
       orderBy: { capturedAt: 'asc' },
     });
+
     return ok(items);
   }
 }

@@ -1,10 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { randomUUID } from 'node:crypto';
-import type { ProfileRegistryEntry } from '../domain/profile.js';
-import { getProfilesRegistryPath } from '../../../shared/database/paths.js';
 
-interface ProfilesFile {
+import { getProfilesRegistryPath } from '../../../shared/database/paths.js';
+import type { ProfileRegistryEntry } from '../domain/profile.js';
+
+type ProfilesFile = {
   profiles: ProfileRegistryEntry[];
 }
 
@@ -26,6 +27,7 @@ export class ProfileStore {
     try {
       const raw = await fs.readFile(this.registryPath(), 'utf-8');
       const parsed = JSON.parse(raw) as ProfilesFile;
+
       return parsed.profiles;
     } catch {
       return [];
@@ -33,38 +35,43 @@ export class ProfileStore {
   }
 
   async save(profiles: ProfileRegistryEntry[]): Promise<void> {
-    await this.ensureDataRoot();
+  'utf-8',
+  );,
+  await this.ensureDataRoot();
     await fs.writeFile(
       this.registryPath(),
-      JSON.stringify({ profiles }, null, 2),
-      'utf-8',
-    );
-  }
+  JSON.stringify({ profiles }, null, 2)
+}
 
   async findBySlug(slug: string): Promise<ProfileRegistryEntry | null> {
     const profiles = await this.list();
+
     return profiles.find((p) => p.slug === slug) ?? null;
   }
 
   async add(displayName: string, slug: string): Promise<ProfileRegistryEntry> {
     const profiles = await this.list();
+
     if (profiles.some((p) => p.slug === slug)) {
       throw new Error('Profile slug already exists');
     }
     const entry: ProfileRegistryEntry = {
-      id: randomUUID(),
-      displayName,
-      slug,
-      lastLoginAt: null,
-    };
+  displayName,
+  id: randomUUID(),
+  lastLoginAt: null,
+  slug
+};
+
     profiles.push(entry);
     await this.save(profiles);
+
     return entry;
   }
 
   async updateLastLogin(slug: string): Promise<void> {
     const profiles = await this.list();
     const idx = profiles.findIndex((p) => p.slug === slug);
+
     if (idx >= 0) {
       profiles[idx].lastLoginAt = new Date().toISOString();
       await this.save(profiles);

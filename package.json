@@ -19,23 +19,34 @@
     "build": "npm run build:contracts && npm run build:backend && npm run build:preload && npm run build:angular",
     "start": "npm run build && npm run start -w @spectre/electron-main",
     "start:dev": "concurrently -k \"npm run start:angular -w @spectre/angular-app\" \"cross-env SPECTRE_DEV=1 npm run start -w @spectre/electron-main\"",
-    "test": "jest",
-    "test:unit": "jest --selectProjects unit",
-    "test:integration": "jest --selectProjects integration",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config=jest.config.cjs",
+    "test:unit": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config=jest.config.cjs --selectProjects unit",
+    "test:integration": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --config=jest.config.cjs --selectProjects integration",
     "test:e2e": "playwright test",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts,.js",
+    "lint:fix": "eslint . --ext .ts,.js --fix"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^22.10.0",
-    "concurrently": "^9.1.0",
-    "jest": "^29.7.0",
-    "prisma": "^6.1.0",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.7.2"
+    "@angular-eslint/eslint-plugin": "^21.0.0",
+    "@angular-eslint/eslint-plugin-template": "^21.0.0",
+    "@angular-eslint/template-parser": "^21.0.0",
+    "@playwright/test": "^1.60.0",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.9.1",
+    "@typescript-eslint/eslint-plugin": "^8.60.1",
+    "@typescript-eslint/parser": "^8.60.1",
+    "concurrently": "^10.0.3",
+    "eslint": "^9.39.4",
+    "eslint-plugin-import": "^2.30.0",
+    "jest": "^30.4.2",
+    "prisma": "^6.11.1",
+    "ts-jest": "^29.4.11",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3"
   }
 }

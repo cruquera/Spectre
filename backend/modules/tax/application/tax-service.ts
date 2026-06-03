@@ -1,7 +1,7 @@
 import type { AppContext } from '../../../shared/app-context.js';
 import { ok } from '../../../shared/kernel/result.js';
 
-/** Phase 9 — base structure for future IR Brasil module */
+/** Phase 9 ??? base structure for future IR Brasil module */
 export class TaxService {
   constructor(private readonly ctx: AppContext) {}
 
@@ -12,23 +12,25 @@ export class TaxService {
       include: { asset: true },
     });
     const preview = {
-      year,
-      sellCount: sells.length,
-      message: 'Módulo IR completo em fase posterior. Preview baseado em vendas.',
-    };
+  message: 'M??dulo IR completo em fase posterior. Preview baseado em vendas.',
+  sellCount: sells.length,
+  year
+};
     const report = await db.taxReport.create({
       data: {
-        year,
-        reportType: 'PREVIEW',
-        data: JSON.stringify(preview),
-      },
+  data: JSON.stringify(preview),
+  reportType: 'PREVIEW',
+  year
+},
     });
+
     return ok({ report, preview });
   }
 
   async listReports() {
     const db = this.ctx.getUserClient();
     const items = await db.taxReport.findMany({ orderBy: { year: 'desc' } });
+
     return ok(items);
   }
 }

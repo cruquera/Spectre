@@ -1,9 +1,10 @@
 import { createHash, randomUUID } from 'node:crypto';
-import fs from 'node:fs/promises';
-import path from 'node:path';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
+
 import type { AppContext } from '../../../shared/app-context.js';
 import { getUserAttachmentsPath } from '../../../shared/database/paths.js';
-import { ok, err, AppError } from '../../../shared/kernel/result.js';
+import { ok } from '../../../shared/kernel/result.js';
 
 export class BrokerageNotesService {
   constructor(private readonly ctx: AppContext) {}
@@ -11,6 +12,7 @@ export class BrokerageNotesService {
   async list() {
     const db = this.ctx.getUserClient();
     const items = await db.brokerageNote.findMany({ orderBy: { noteDate: 'desc' } });
+
     return ok(items);
   }
 
@@ -30,20 +32,23 @@ export class BrokerageNotesService {
       getUserAttachmentsPath(this.ctx.getDataRoot(), session.slug),
       relDir,
     );
+
     await fs.mkdir(absDir, { recursive: true });
     const absPath = path.join(absDir, path.basename(relPath));
+
     await fs.writeFile(absPath, buffer);
 
     const db = this.ctx.getUserClient();
     const note = await db.brokerageNote.create({
       data: {
-        hashSha256: hash,
-        relativePath: relPath.replace(/\\/g, '/'),
-        brokerId,
-        noteDate: new Date(noteDate),
-        parsedStatus: 'MANUAL',
-      },
+  brokerId,
+  hashSha256: hash,
+  noteDate: new Date(noteDate),
+  parsedStatus: 'MANUAL',
+  relativePath: relPath.replace(/\\/g, '/')
+},
     });
+
     return ok(note);
   }
 
@@ -52,11 +57,13 @@ export class BrokerageNotesService {
     const op = await db.brokerageNoteOperation.create({
       data: { noteId, transactionId, description },
     });
+
     return ok(op);
   }
 
   validatePath(relativePath: string): boolean {
     const normalized = path.normalize(relativePath);
+
     return !normalized.includes('..') && !path.isAbsolute(normalized);
   }
 }

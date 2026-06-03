@@ -9,32 +9,35 @@ export class ImportService {
     this.benchmark = new BenchmarkService(ctx);
   }
 
-  /** FX via benchmark cache (PTAX/USD tickers) — phase 8 */
+  /** FX via benchmark cache (PTAX/USD tickers) ??? phase 8 */
   async syncFxFromBenchmark(
     fromCurrency: string,
     toCurrency: string,
     ticker: string,
   ) {
     const result = await this.benchmark.listCached({
-      ticker,
-      period: '1M',
-      benchmarkType: 'FX',
-      source: 'BCB',
-    });
+  benchmarkType: 'FX',
+  period: '1M',
+  source: 'BCB',
+  ticker
+});
+
     if (!result.ok || !result.value?.dataPoints.length) {
       return ok({ synced: false });
     }
     const latest = result.value.dataPoints.at(-1)!;
     const db = this.ctx.getUserClient();
+
     await db.exchangeRate.create({
       data: {
-        fromCurrency,
-        toCurrency,
-        rate: latest.value,
-        asOf: new Date(latest.date),
-        source: 'BENCHMARK',
-      },
+  asOf: new Date(latest.date),
+  fromCurrency,
+  rate: latest.value,
+  source: 'BENCHMARK',
+  toCurrency
+},
     });
+
     return ok({ synced: true, rate: latest.value });
   }
 
@@ -42,21 +45,24 @@ export class ImportService {
     const db = this.ctx.getUserClient();
     const lines = csvContent.trim().split('\n').slice(1);
     let count = 0;
+
     for (const line of lines) {
       const [symbol, price, currency, asOf] = line.split(',').map((s) => s.trim());
       const asset = await db.asset.findFirst({ where: { symbol } });
+
       if (!asset) continue;
       await db.quote.create({
         data: {
-          assetId: asset.id,
-          price: parseFloat(price),
-          currency: currency || asset.currency,
-          asOf: new Date(asOf),
-          source: 'IMPORT',
-        },
+  asOf: new Date(asOf),
+  assetId: asset.id,
+  currency: currency || asset.currency,
+  price: parseFloat(price),
+  source: 'IMPORT'
+},
       });
       count++;
     }
+
     return ok({ imported: count });
   }
 
@@ -64,25 +70,28 @@ export class ImportService {
     const db = this.ctx.getUserClient();
     const lines = csvContent.trim().split('\n').slice(1);
     let count = 0;
+
     for (const line of lines) {
       const [symbol, type, quantity, unitPrice, tradeDate, currency] = line
         .split(',')
         .map((s) => s.trim());
       const asset = await db.asset.findFirst({ where: { symbol } });
+
       if (!asset) continue;
       await db.transaction.create({
         data: {
-          accountId,
-          assetId: asset.id,
-          type: type as 'BUY' | 'SELL',
-          quantity: parseFloat(quantity),
-          unitPrice: parseFloat(unitPrice),
-          tradeDate: new Date(tradeDate),
-          currency: currency || 'BRL',
-        },
+  accountId,
+  assetId: asset.id,
+  currency: currency || 'BRL',
+  quantity: parseFloat(quantity),
+  tradeDate: new Date(tradeDate),
+  type: type as 'BUY' | 'SELL',
+  unitPrice: parseFloat(unitPrice)
+},
       });
       count++;
     }
+
     return ok({ imported: count });
   }
 }

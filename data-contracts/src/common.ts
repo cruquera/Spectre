@@ -15,8 +15,8 @@ export type IpcResult<T> =
 
 export const healthcheckResponseSchema = z.object({
   status: z.literal('ok'),
-  version: z.string(),
   timestamp: z.string(),
+  version: z.string()
 });
 
 export type HealthcheckResponse = z.infer<typeof healthcheckResponseSchema>;

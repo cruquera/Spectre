@@ -11,8 +11,8 @@ const ipcResultSchema = (dataSchema) => zod_1.z.discriminatedUnion('success', [
 ]);
 exports.ipcResultSchema = ipcResultSchema;
 exports.healthcheckResponseSchema = zod_1.z.object({
-    status: zod_1.z.literal('ok'),
-    version: zod_1.z.string(),
-    timestamp: zod_1.z.string(),
+  status: zod_1.z.literal('ok'),
+  timestamp: zod_1.z.string(),
+  version: zod_1.z.string()
 });
 //# sourceMappingURL=common.js.map

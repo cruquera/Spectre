@@ -4,14 +4,15 @@ export async function seedDefaultStrategies(client: UserPrismaClient): Promise<v
   const existing = await client.strategy.findUnique({
     where: { key: 'weighted-rebalance' },
   });
+
   if (existing) return;
 
   await client.strategy.create({
     data: {
-      key: 'weighted-rebalance',
-      name: 'Rebalanceamento Ponderado',
-      version: '1.0.0',
-      isActive: true,
-    },
+  isActive: true,
+  key: 'weighted-rebalance',
+  name: 'Rebalanceamento Ponderado',
+  version: '1.0.0'
+},
   });
 }

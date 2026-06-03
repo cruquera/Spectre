@@ -7,6 +7,7 @@ export class PortfolioService {
   async list() {
     const db = this.ctx.getUserClient();
     const items = await db.portfolio.findMany({ orderBy: { name: 'asc' } });
+
     return ok(items);
   }
 
@@ -15,14 +16,16 @@ export class PortfolioService {
     const portfolio = await db.portfolio.create({
       data: { name, baseCurrency },
     });
+
     if (accountIds?.length) {
       await db.portfolioAccount.createMany({
         data: accountIds.map((accountId) => ({
-          portfolioId: portfolio.id,
-          accountId,
-        })),
+  accountId,
+  portfolioId: portfolio.id
+})),
       });
     }
+
     return ok(portfolio);
   }
 
@@ -41,12 +44,14 @@ export class PortfolioService {
     const db = this.ctx.getUserClient();
     const tx = await db.transaction.create({
       data: {
-        ...data,
-        type: data.type as 'BUY' | 'SELL',
-        tradeDate: new Date(data.tradeDate),
-      },
+  ...data,
+  tradeDate: new Date(data.tradeDate),
+  type: data.type as 'BUY' | 'SELL'
+},
     });
+
     await this.updatePosition(data.accountId, data.assetId, data.type, data.quantity, data.unitPrice, data.currency);
+
     return ok(tx);
   }
 
@@ -56,6 +61,7 @@ export class PortfolioService {
       where: accountId ? { accountId } : undefined,
       include: { asset: true },
     });
+
     return ok(items);
   }
 
@@ -72,15 +78,18 @@ export class PortfolioService {
       where: { accountId_assetId: { accountId, assetId } },
     });
     const delta = type === 'SELL' ? -quantity : quantity;
+
     if (!existing) {
       if (delta > 0) {
         await db.position.create({
           data: { accountId, assetId, quantity: delta, averageCost: unitPrice, costCurrency: currency },
         });
       }
+
       return;
     }
     const newQty = existing.quantity + delta;
+
     await db.position.update({
       where: { id: existing.id },
       data: { quantity: newQty },

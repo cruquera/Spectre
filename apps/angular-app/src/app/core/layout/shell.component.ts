@@ -1,40 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+
 import { IpcService } from '../services/ipc.service';
 
 @Component({
+  imports: [RouterOutlet, RouterLink, RouterLinkActive],
   selector: 'sp-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
-  template: `
-    <div class="flex h-screen">
-      <aside class="w-56 bg-spectre-surface border-r border-slate-700 p-4 flex flex-col">
-        <h1 class="text-xl font-bold text-spectre-accent mb-6">Spectre</h1>
-        <nav class="flex flex-col gap-1 text-sm flex-1">
-          @for (item of nav; track item.path) {
-            <a
-              [routerLink]="item.path"
-              routerLinkActive="bg-slate-700 text-white"
-              class="px-3 py-2 rounded hover:bg-slate-800 text-slate-300"
-              >{{ item.label }}</a
-            >
-          }
-        </nav>
-        <div class="text-xs text-slate-500 mt-4">
-          {{ session()?.displayName }}
-        </div>
-        <button
-          class="mt-2 text-sm text-red-400 hover:underline"
-          (click)="logout()"
-        >
-          Sair
-        </button>
-      </aside>
-      <main class="flex-1 overflow-auto p-6">
-        <router-outlet />
-      </main>
-    </div>
-  `,
+  templateUrl: './shell.component.html'
 })
 export class ShellComponent {
   private readonly ipc = inject(IpcService);
@@ -42,17 +15,17 @@ export class ShellComponent {
 
   nav = [
     { path: '/dashboard', label: 'Dashboard' },
-    { path: '/institutions', label: 'Instituições' },
+    { path: '/institutions', label: 'Institui????es' },
     { path: '/accounts', label: 'Contas' },
     { path: '/assets', label: 'Ativos' },
     { path: '/portfolio', label: 'Carteira' },
-    { path: '/allocation', label: 'Alocação' },
+    { path: '/allocation', label: 'Aloca????o' },
     { path: '/contributions', label: 'Aportes' },
     { path: '/rebalancing', label: 'Rebalanceamento' },
     { path: '/brokerage-notes', label: 'Notas' },
-    { path: '/patrimony', label: 'Patrimônio' },
+    { path: '/patrimony', label: 'Patrim??nio' },
     { path: '/analytics', label: 'Analytics' },
-    { path: '/settings', label: 'Configurações' },
+    { path: '/settings', label: 'Configura????es' },
   ];
 
   async logout() {
