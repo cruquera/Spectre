@@ -61,28 +61,66 @@ import { getBenchmarkDbPath } from '../database/paths.js';
 import { createBenchmarkClient } from '../database/prisma-factory.js';
 import { ok, toIpcResult } from '../kernel/result.js';
 
-export function registerIpcHandlers(ctx: AppContext): void {
-  const identity = new IdentityService(ctx);
-  const institutions = new InstitutionsService(ctx, new PrismaInstitutionRepository(ctx.getUserClient()));
-  const accounts = new AccountsService(ctx, new PrismaAccountRepository(ctx.getUserClient()));
-  const assets = new AssetsService(ctx, new PrismaAssetRepository(ctx.getUserClient()));
-  const portfolioRepo = new PrismaPortfolioRepository(ctx.getUserClient());
-  const allocationRepo = new PrismaAllocationRepository(ctx.getUserClient());
-  const portfolio = new PortfolioService(portfolioRepo);
+function lazyServices(ctx: AppContext) {
+  let cache: ReturnType<typeof createServices> | null = null;
+
+  return function getServices() {
+    if (!cache) {
+      cache = createServices(ctx);
+    }
+    return cache;
+  };
+}
+
+function createServices(ctx: AppContext) {
   const db = ctx.getUserClient();
-  const valuation = new ValuationService(ctx, new PrismaValuationRepository(db));
+  const institutionsRepo = new PrismaInstitutionRepository(db);
+  const accountsRepo = new PrismaAccountRepository(db);
+  const assetsRepo = new PrismaAssetRepository(db);
+  const portfolioRepo = new PrismaPortfolioRepository(db);
+  const allocationRepo = new PrismaAllocationRepository(db);
+  const valuationRepo = new PrismaValuationRepository(db);
+  const marketDataRepo = new PrismaMarketDataRepository(db);
+  const contributionRepo = new PrismaContributionRepository(db);
+  const brokerageNotesRepo = new PrismaBrokerageNoteRepository(db);
+  const taxRepo = new PrismaTaxRepository(db);
+  const importRepo = new PrismaImportRepository(db);
+  const documentsRepo = new PrismaDocumentRepository(db);
+  const patrimonyRepo = new PrismaPatrimonyRepository(db);
+
+  const valuation = new ValuationService(ctx, valuationRepo);
   const allocation = new AllocationService(ctx, allocationRepo, valuation);
   const benchmark = new BenchmarkService(ctx, new PrismaBenchmarkRepository(ctx.getBenchmarkClient()));
-  const marketData = new MarketDataService(ctx, new PrismaMarketDataRepository(db), benchmark);
+  const marketData = new MarketDataService(ctx, marketDataRepo, benchmark);
   const rebalancing = new RebalancingService(allocation);
-  const patrimony = new PatrimonyService(ctx, new PrismaPatrimonyRepository(db), valuation);
+  const portfolio = new PortfolioService(portfolioRepo);
+  const patrimony = new PatrimonyService(ctx, patrimonyRepo, valuation);
   const analytics = new AnalyticsService(patrimony);
-  const contributionRepo = new PrismaContributionRepository(db);
-  const contribution = new ContributionService(ctx, contributionRepo, allocation);
-  const brokerageNotes = new BrokerageNotesService(ctx, new PrismaBrokerageNoteRepository(db));
-  const tax = new TaxService(ctx, new PrismaTaxRepository(db));
-  const importSvc = new ImportService(ctx, new PrismaImportRepository(db), benchmark);
-  const documents = new DocumentsService(ctx, new PrismaDocumentRepository(db));
+  const importSvc = new ImportService(ctx, importRepo, benchmark);
+
+  return {
+    institutions: new InstitutionsService(ctx, institutionsRepo),
+    accounts: new AccountsService(ctx, accountsRepo),
+    assets: new AssetsService(ctx, assetsRepo),
+    portfolio,
+    allocation,
+    valuation,
+    benchmark,
+    marketData,
+    rebalancing,
+    patrimony,
+    analytics,
+    contribution: new ContributionService(ctx, contributionRepo, allocation),
+    brokerageNotes: new BrokerageNotesService(ctx, brokerageNotesRepo),
+    tax: new TaxService(ctx, taxRepo),
+    importSvc,
+    documents: new DocumentsService(ctx, documentsRepo),
+  };
+}
+
+export function registerIpcHandlers(ctx: AppContext): void {
+  const identity = new IdentityService(ctx);
+  const getServices = lazyServices(ctx);
 
   ipcMain.handle('system:healthcheck', () => {
     const data = {
@@ -116,67 +154,67 @@ export function registerIpcHandlers(ctx: AppContext): void {
     const input = createProfileRequestSchema.parse(raw);
 
     return toIpcResult(
-      await identity.createProfile(input.displayName, input.slug, input.password),
+      await identity.createProfile(input.displayName, input.username, input.password),
     );
   });
 
   ipcMain.handle('identity:login', async (_e, raw) => {
     const input = loginRequestSchema.parse(raw);
 
-    return toIpcResult(await identity.login(input.slug, input.password));
+    return toIpcResult(await identity.login(input.username, input.password));
   });
 
   ipcMain.handle('identity:logout', async () => toIpcResult(await identity.logout()));
 
-  ipcMain.handle('institutions:list', async () => toIpcResult(await institutions.list()));
+  ipcMain.handle('institutions:list', async () => toIpcResult(await getServices().institutions.list()));
   ipcMain.handle('institutions:create', async (_e, raw) => {
     const input = createInstitutionSchema.parse(raw);
 
-    return toIpcResult(await institutions.create(input.name, input.type));
+    return toIpcResult(await getServices().institutions.create(input.name, input.type));
   });
 
   ipcMain.handle('accounts:list', async (_e, institutionId?: string) =>
-    toIpcResult(await accounts.list(institutionId)),
+    toIpcResult(await getServices().accounts.list(institutionId)),
   );
   ipcMain.handle('accounts:create', async (_e, raw) => {
     const input = createAccountSchema.parse(raw);
 
     return toIpcResult(
-      await accounts.create(input.institutionId, input.name, input.currency),
+      await getServices().accounts.create(input.institutionId, input.name, input.currency),
     );
   });
 
   ipcMain.handle('assets:list', async (_e, category?: string) =>
-    toIpcResult(await assets.list(category as never)),
+    toIpcResult(await getServices().assets.list(category as never)),
   );
   ipcMain.handle('assets:create', async (_e, raw) => {
     const input = createAssetSchema.parse(raw);
 
-    return toIpcResult(await assets.create(input));
+    return toIpcResult(await getServices().assets.create(input));
   });
 
-  ipcMain.handle('portfolio:list', async () => toIpcResult(await portfolio.list()));
+  ipcMain.handle('portfolio:list', async () => toIpcResult(await getServices().portfolio.list()));
   ipcMain.handle('portfolio:create', async (_e, raw) => {
     const input = createPortfolioSchema.parse(raw);
 
     return toIpcResult(
-      await portfolio.create(input.name, input.baseCurrency, input.accountIds),
+      await getServices().portfolio.create(input.name, input.baseCurrency, input.accountIds),
     );
   });
   ipcMain.handle('portfolio:createTransaction', async (_e, raw) => {
     const input = createTransactionSchema.parse(raw);
 
-    return toIpcResult(await portfolio.createTransaction(input));
+    return toIpcResult(await getServices().portfolio.createTransaction(input));
   });
   ipcMain.handle('portfolio:listPositions', async (_e, accountId?: string) =>
-    toIpcResult(await portfolio.listPositions(accountId)),
+    toIpcResult(await getServices().portfolio.listPositions(accountId)),
   );
 
   ipcMain.handle('allocation:setCategory', async (_e, raw) => {
     const input = setCategoryAllocationSchema.parse(raw);
 
     return toIpcResult(
-      await allocation.setCategoryTarget(
+      await getServices().allocation.setCategoryTarget(
         input.portfolioId,
         input.category,
         input.targetPercent,
@@ -187,7 +225,7 @@ export function registerIpcHandlers(ctx: AppContext): void {
     const input = setAssetAllocationSchema.parse(raw);
 
     return toIpcResult(
-      await allocation.setAssetTarget(
+      await getServices().allocation.setAssetTarget(
         input.portfolioId,
         input.assetId,
         input.targetPercent,
@@ -195,29 +233,29 @@ export function registerIpcHandlers(ctx: AppContext): void {
     );
   });
   ipcMain.handle('allocation:analyze', async (_e, portfolioId: string, threshold: number = 5) =>
-    toIpcResult(await allocation.analyze(portfolioId, threshold)),
+    toIpcResult(await getServices().allocation.analyze(portfolioId, threshold)),
   );
 
   ipcMain.handle('benchmark:sync', async (_e, raw) => {
     const input = benchmarkRequestSchema.parse(raw);
 
-    return toIpcResult(await benchmark.sync(input));
+    return toIpcResult(await getServices().benchmark.sync(input));
   });
   ipcMain.handle('benchmark:listCached', async (_e, raw) => {
     const input = benchmarkRequestSchema.parse(raw);
 
-    return toIpcResult(await benchmark.listCached(input));
+    return toIpcResult(await getServices().benchmark.listCached(input));
   });
 
   ipcMain.handle('marketData:syncBenchmark', async (_e, assetId: string, ticker: string) =>
-    toIpcResult(await marketData.syncFromBenchmark(assetId, ticker)),
+    toIpcResult(await getServices().marketData.syncFromBenchmark(assetId, ticker)),
   );
 
   ipcMain.handle('marketData:createQuote', async (_e, raw) => {
     const input = createQuoteSchema.parse(raw);
 
     return toIpcResult(
-      await marketData.createManualQuote(
+      await getServices().marketData.createManualQuote(
         input.assetId,
         input.price,
         input.currency,
@@ -229,20 +267,20 @@ export function registerIpcHandlers(ctx: AppContext): void {
   ipcMain.handle('contribution:createBlock', async (_e, raw) => {
     const input = createInvestmentBlockSchema.parse(raw);
 
-    return toIpcResult(await contribution.createBlock(input.name, input.assetIds));
+    return toIpcResult(await getServices().contribution.createBlock(input.name, input.assetIds));
   });
   ipcMain.handle('contribution:setMonthlyBlock', async (_e, raw) => {
     const input = setMonthlyBlockSchema.parse(raw);
 
     return toIpcResult(
-      await contribution.setMonthlyBlock(input.year, input.month, input.blockId),
+      await getServices().contribution.setMonthlyBlock(input.year, input.month, input.blockId),
     );
   });
   ipcMain.handle('contribution:simulate', async (_e, raw) => {
     const input = simulateContributionSchema.parse(raw);
 
     return toIpcResult(
-      await contribution.simulate(
+      await getServices().contribution.simulate(
         input.portfolioId,
         input.amount,
         input.currency,
@@ -253,17 +291,17 @@ export function registerIpcHandlers(ctx: AppContext): void {
   });
 
   ipcMain.handle('rebalancing:analyze', async (_e, portfolioId: string, threshold: number = 5) =>
-    toIpcResult(await rebalancing.analyze(portfolioId, threshold)),
+    toIpcResult(await getServices().rebalancing.analyze(portfolioId, threshold)),
   );
 
   ipcMain.handle('brokerageNotes:list', async () =>
-    toIpcResult(await brokerageNotes.list()),
+    toIpcResult(await getServices().brokerageNotes.list()),
   );
   ipcMain.handle('brokerageNotes:register', async (_e, raw) => {
     const input = registerBrokerageNoteSchema.parse(raw);
 
     return toIpcResult(
-      await brokerageNotes.register(
+      await getServices().brokerageNotes.register(
         input.brokerId,
         input.noteDate,
         input.fileName,
@@ -275,41 +313,41 @@ export function registerIpcHandlers(ctx: AppContext): void {
   ipcMain.handle('patrimony:capture', async (_e, raw) => {
     const input = captureSnapshotSchema.parse(raw);
 
-    return toIpcResult(await patrimony.captureSnapshot(input.portfolioId));
+    return toIpcResult(await getServices().patrimony.captureSnapshot(input.portfolioId));
   });
   ipcMain.handle('patrimony:list', async (_e, portfolioId: string) =>
-    toIpcResult(await patrimony.listHistory(portfolioId)),
+    toIpcResult(await getServices().patrimony.listHistory(portfolioId)),
   );
 
   ipcMain.handle('tax:preview', async (_e, raw) => {
     const input = generateTaxPreviewSchema.parse(raw);
 
-    return toIpcResult(await tax.generatePreview(input.year));
+    return toIpcResult(await getServices().tax.generatePreview(input.year));
   });
 
   ipcMain.handle('import:quotesCsv', async (_e, raw) => {
     const input = importQuotesCsvSchema.parse(raw);
 
-    return toIpcResult(await importSvc.importQuotesCsv(input.csvContent));
+    return toIpcResult(await getServices().importSvc.importQuotesCsv(input.csvContent));
   });
   ipcMain.handle('import:syncFx', async (_e, from: string, to: string, ticker: string) =>
-    toIpcResult(await importSvc.syncFxFromBenchmark(from, to, ticker)),
+    toIpcResult(await getServices().importSvc.syncFxFromBenchmark(from, to, ticker)),
   );
 
   ipcMain.handle('import:operationsCsv', async (_e, raw) => {
     const input = importOperationsCsvSchema.parse(raw);
 
     return toIpcResult(
-      await importSvc.importOperationsCsv(input.accountId, input.csvContent),
+      await getServices().importSvc.importOperationsCsv(input.accountId, input.csvContent),
     );
   });
 
-  ipcMain.handle('documents:list', async () => toIpcResult(await documents.list()));
+  ipcMain.handle('documents:list', async () => toIpcResult(await getServices().documents.list()));
   ipcMain.handle('documents:register', async (_e, raw) => {
     const input = registerDocumentSchema.parse(raw);
 
     return toIpcResult(
-      await documents.register(
+      await getServices().documents.register(
         input.documentType,
         input.documentDate,
         input.fileName,
@@ -322,10 +360,10 @@ export function registerIpcHandlers(ctx: AppContext): void {
     const db = ctx.getUserClient();
     const p = await db.portfolio.findUniqueOrThrow({ where: { id: portfolioId } });
 
-    return toIpcResult(await valuation.getPortfolioValue(portfolioId, p.baseCurrency));
+    return toIpcResult(await getServices().valuation.getPortfolioValue(portfolioId, p.baseCurrency));
   });
 
   ipcMain.handle('analytics:portfolioEvolution', async (_e, portfolioId: string) =>
-    toIpcResult(await analytics.portfolioEvolution(portfolioId)),
+    toIpcResult(await getServices().analytics.portfolioEvolution(portfolioId)),
   );
 }

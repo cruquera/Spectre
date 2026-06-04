@@ -10,7 +10,7 @@ import { IpcService } from '../services/ipc.service';
   templateUrl: './shell.component.html',
 })
 export class ShellComponent {
-  public get session(): { displayName: string; slug: string } | null { return this.ipc.session(); }
+  public get session(): { displayName: string; username: string } | null { return this.ipc.session(); }
   public readonly nav = [
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Institui????es', path: '/institutions' },

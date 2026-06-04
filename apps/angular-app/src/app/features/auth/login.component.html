@@ -4,7 +4,7 @@
     [formGroup]="form"
     (ngSubmit)="submit()"
   >
-    <h2 class="text-2xl font-bold mb-6">Login — {{ slug() }}</h2>
+    <h2 class="text-2xl font-bold mb-6">Login — {{ username() }}</h2>
     @if (error()) {
       <p class="text-red-400 text-sm mb-4">{{ error() }}</p>
     }

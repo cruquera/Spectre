@@ -29,22 +29,22 @@ export class IdentityService {
 
   public async createProfile(
     displayName: string,
-    slug: string,
+    username: string,
     password: string,
-  ): Promise<Result<{ slug: string }, AppError>> {
+  ): Promise<Result<{ username: string }, AppError>> {
     try {
       await this.profileStore.ensureDataRoot();
-      const existing = await this.profileStore.findBySlug(slug);
+      const existing = await this.profileStore.findByUsername(username);
 
       if (existing) {
-        return err(new AppError('PROFILE_EXISTS', 'Profile slug already exists'));
+        return err(new AppError('PROFILE_EXISTS', 'Profile username already exists'));
       }
 
-      const entry = await this.profileStore.add(displayName, slug);
-      const userDir = getUserDir(this.ctx.getDataRoot(), slug);
+      const entry = await this.profileStore.add(displayName, username);
+      const userDir = getUserDir(this.ctx.getDataRoot(), username);
 
       await fs.mkdir(userDir, { recursive: true });
-      await fs.mkdir(getUserAttachmentsPath(this.ctx.getDataRoot(), slug), {
+      await fs.mkdir(getUserAttachmentsPath(this.ctx.getDataRoot(), username), {
         recursive: true,
       });
       await fs.mkdir(path.join(userDir, 'imports'), { recursive: true });
@@ -55,9 +55,9 @@ export class IdentityService {
 
       const dbKey = await this.crypto.deriveDbKey(
         password,
-        getUserSaltPath(this.ctx.getDataRoot(), slug),
+        getUserSaltPath(this.ctx.getDataRoot(), username),
       );
-      const dbPath = getUserDbPath(this.ctx.getDataRoot(), slug);
+      const dbPath = getUserDbPath(this.ctx.getDataRoot(), username);
       const client = createEncryptedUserClient(dbPath, dbKey);
 
       await client.$executeRaw`SELECT 1`;
@@ -67,7 +67,7 @@ export class IdentityService {
       await seedDefaultStrategies(client);
       await client.$disconnect();
 
-      return ok({ slug: entry.slug });
+      return ok({ username: entry.username });
     } catch (e) {
       return err(
         new AppError(
@@ -79,18 +79,18 @@ export class IdentityService {
   }
 
   public async login(
-    slug: string,
+    username: string,
     password: string,
   ): Promise<Result<{ displayName: string }, AppError>> {
     try {
-      const profile = await this.profileStore.findBySlug(slug);
+      const profile = await this.profileStore.findByUsername(username);
 
       if (!profile) {
         return err(new AppError('PROFILE_NOT_FOUND', 'Profile not found'));
       }
 
       const hashPath = path.join(
-        getUserDir(this.ctx.getDataRoot(), slug),
+        getUserDir(this.ctx.getDataRoot(), username),
         '.password-hash',
       );
       const hash = await fs.readFile(hashPath, 'utf-8');
@@ -102,9 +102,9 @@ export class IdentityService {
 
       const dbKey = await this.crypto.deriveDbKey(
         password,
-        getUserSaltPath(this.ctx.getDataRoot(), slug),
+        getUserSaltPath(this.ctx.getDataRoot(), username),
       );
-      const dbPath = getUserDbPath(this.ctx.getDataRoot(), slug);
+      const dbPath = getUserDbPath(this.ctx.getDataRoot(), username);
       const client = createEncryptedUserClient(dbPath, dbKey);
 
       await client.$connect();
@@ -118,8 +118,8 @@ export class IdentityService {
         // no previous session
       }
       this.ctx.setUserClient(client);
-      this.ctx.setSession({ displayName: profile.displayName, slug });
-      await this.profileStore.updateLastLogin(slug);
+      this.ctx.setSession({ displayName: profile.displayName, username });
+      await this.profileStore.updateLastLogin(username);
 
       return ok({ displayName: profile.displayName });
     } catch (e) {

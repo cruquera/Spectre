@@ -9,7 +9,7 @@ import { IpcService } from '../../core/services/ipc.service';
   templateUrl: './profile-select.component.html',
 })
 export class ProfileSelectComponent implements OnInit {
-  public readonly profiles = signal<Array<{ slug: string; displayName: string }>>([]);
+  public readonly profiles = signal<Array<{ username: string; displayName: string }>>([]);
   public readonly error = signal<string | null>(null);
 
   private readonly ipc = inject(IpcService);
@@ -25,7 +25,7 @@ export class ProfileSelectComponent implements OnInit {
       const res = await this.ipc.identity.listProfiles();
 
       if (res.success) {
-        this.profiles.set(res.data as Array<{ slug: string; displayName: string }>);
+        this.profiles.set(res.data as Array<{ username: string; displayName: string }>);
       } else {
         this.error.set(res.error?.message ?? 'Erro');
       }

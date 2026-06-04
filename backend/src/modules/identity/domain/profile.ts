@@ -1,13 +1,13 @@
 export type LocalProfile = {
   id: string;
   displayName: string;
-  slug: string;
+  username: string;
   lastLoginAt: string | null;
 }
 
 export type ProfileRegistryEntry = {
   id: string;
   displayName: string;
-  slug: string;
+  username: string;
   lastLoginAt: string | null;
 }

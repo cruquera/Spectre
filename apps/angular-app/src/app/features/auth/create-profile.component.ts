@@ -21,16 +21,16 @@ export class CreateProfileComponent implements OnInit {
     this.form = this.fb.group({
       displayName: ['', (c: AbstractControl) => Validators.required(c)],
       password: ['', [(c: AbstractControl) => Validators.required(c), Validators.minLength(4)]],
-      slug: ['', [(c: AbstractControl) => Validators.required(c), Validators.pattern(/^[a-z0-9-]+$/)]],
+      username: ['', [(c: AbstractControl) => Validators.required(c), Validators.pattern(/^[a-z0-9-]+$/)]],
     });
   }
 
   public async submit(): Promise<void> {
-    const v = this.form.getRawValue() as { displayName: string; password: string; slug: string };
+    const v = this.form.getRawValue() as { displayName: string; password: string; username: string };
     const res = await this.ipc.identity.createProfile(v);
 
     if (res.success) {
-      await this.router.navigate(['/auth/login', v.slug]);
+      await this.router.navigate(['/auth/login', v.username]);
     } else {
       this.error.set(res.error?.message ?? 'Erro ao criar');
     }

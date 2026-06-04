@@ -7,7 +7,7 @@ import { IpcService } from '../../core/services/ipc.service';
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
-  public get session(): { displayName: string; slug: string } | null { return this.ipc.session(); }
+  public get session(): { displayName: string; username: string } | null { return this.ipc.session(); }
   public readonly health = signal<{ status: string; version: string } | null>(null);
 
   private readonly ipc = inject(IpcService);

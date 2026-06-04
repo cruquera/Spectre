@@ -2,7 +2,7 @@ import { Injectable, signal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
 export class IpcService {
-  public readonly session = signal<{ displayName: string; slug: string } | null>(null);
+  public readonly session = signal<{ displayName: string; username: string } | null>(null);
 
   private get api(): Window['spectre'] {
     if (!window.spectre) {

@@ -33,7 +33,7 @@ export class DocumentsService {
     const relDir = path.join('documents', String(year));
     const relPath = path.join(relDir, `${randomUUID()}-${fileName}`);
     const absDir = path.join(
-      getUserAttachmentsPath(this.ctx.getDataRoot(), session.slug),
+      getUserAttachmentsPath(this.ctx.getDataRoot(), session.username),
       relDir,
     );
 

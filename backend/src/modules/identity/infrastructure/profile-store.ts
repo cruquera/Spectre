@@ -39,23 +39,23 @@ export class ProfileStore {
     );
   }
 
-  public async findBySlug(slug: string): Promise<ProfileRegistryEntry | null> {
+  public async findByUsername(username: string): Promise<ProfileRegistryEntry | null> {
     const profiles = await this.list();
 
-    return profiles.find((p) => p.slug === slug) ?? null;
+    return profiles.find((p) => p.username === username) ?? null;
   }
 
-  public async add(displayName: string, slug: string): Promise<ProfileRegistryEntry> {
+  public async add(displayName: string, username: string): Promise<ProfileRegistryEntry> {
     const profiles = await this.list();
 
-    if (profiles.some((p) => p.slug === slug)) {
-      throw new Error('Profile slug already exists');
+    if (profiles.some((p) => p.username === username)) {
+      throw new Error('Profile username already exists');
     }
     const entry: ProfileRegistryEntry = {
       displayName,
       id: randomUUID(),
       lastLoginAt: null,
-      slug,
+      username,
     };
 
     profiles.push(entry);
@@ -64,9 +64,9 @@ export class ProfileStore {
     return entry;
   }
 
-  public async updateLastLogin(slug: string): Promise<void> {
+  public async updateLastLogin(username: string): Promise<void> {
     const profiles = await this.list();
-    const idx = profiles.findIndex((p) => p.slug === slug);
+    const idx = profiles.findIndex((p) => p.username === username);
 
     if (idx >= 0) {
       profiles[idx].lastLoginAt = new Date().toISOString();

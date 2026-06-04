@@ -33,7 +33,7 @@ export class BrokerageNotesService {
     const relDir = path.join('brokerage-notes', String(year));
     const relPath = path.join(relDir, `${randomUUID()}-${fileName}`);
     const absDir = path.join(
-      getUserAttachmentsPath(this.ctx.getDataRoot(), session.slug),
+      getUserAttachmentsPath(this.ctx.getDataRoot(), session.username),
       relDir,
     );
 

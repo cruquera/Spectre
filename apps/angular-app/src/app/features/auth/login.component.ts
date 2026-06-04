@@ -10,7 +10,7 @@ import { IpcService } from '../../core/services/ipc.service';
   templateUrl: './login.component.html',
 })
 export class LoginComponent implements OnInit {
-  public readonly slug = input.required<string>();
+  public readonly username = input.required<string>();
   public readonly error = signal<string | null>(null);
   public form!: FormGroup;
 
@@ -28,13 +28,13 @@ export class LoginComponent implements OnInit {
     const v = this.form.value as { password: string };
     const res = await this.ipc.identity.login({
       password: v.password,
-      slug: this.slug(),
+      username: this.username(),
     });
 
     if (res.success && res.data) {
       this.ipc.session.set({
         displayName: (res.data).displayName,
-        slug: this.slug(),
+        username: this.username(),
       });
       await this.router.navigate(['/dashboard']);
     } else {

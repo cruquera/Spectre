@@ -2,7 +2,7 @@ import type { PrismaClient as BenchmarkPrismaClient } from '../../node_modules/.
 import type { PrismaClient as UserPrismaClient } from '../../node_modules/.prisma/user-client/index.js';
 
 export type SessionState = {
-  slug: string;
+  username: string;
   displayName: string;
 }
 

@@ -6,6 +6,6 @@ import { ProfileSelectComponent } from './profile-select.component';
 
 export const AUTH_ROUTES: Routes = [
   { component: ProfileSelectComponent, path: '' },
-  { component: LoginComponent, path: 'login/:slug' },
+  { component: LoginComponent, path: 'login/:username' },
   { component: CreateProfileComponent, path: 'create' },
 ];

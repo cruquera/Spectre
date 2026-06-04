@@ -14,12 +14,12 @@
     "build": "tsc -p tsconfig.json && node scripts/copy-sql.mjs"
   },
   "dependencies": {
-    "@prisma/adapter-better-sqlite3": "^6.11.1",
-    "@prisma/client": "^6.11.1",
+    "@prisma/adapter-better-sqlite3": "^6.19.3",
+    "@prisma/client": "^6.19.3",
     "@spectre/data-contracts": "*",
     "argon2": "^0.44.0",
-    "better-sqlite3": "^11.10.0",
-    "electron": "^42.3.2",
+    "better-sqlite3": "^12.10.0",
+    "electron": "^41.7.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
