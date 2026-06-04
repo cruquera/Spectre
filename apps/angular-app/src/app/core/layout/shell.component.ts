@@ -17,6 +17,7 @@ export class ShellComponent {
     { label: 'Contas', path: '/accounts' },
     { label: 'Ativos', path: '/assets' },
     { label: 'Carteira', path: '/portfolio' },
+    { label: 'Blocos', path: '/investment-blocks' },
     { label: 'Aloca????o', path: '/allocation' },
     { label: 'Aportes', path: '/contributions' },
     { label: 'Rebalanceamento', path: '/rebalancing' },

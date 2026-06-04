@@ -15,6 +15,7 @@ export interface SpectreApi {
     logout(): Promise<IpcResult<void>>;
   };
   institutions: { list(): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>> };
+  investmentBlocks: { list(): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>>; getById(id: string): Promise<IpcResult<unknown>>; update(data: unknown): Promise<IpcResult<unknown>>; remove(data: unknown): Promise<IpcResult<void>>; setMonthlyBlock(data: unknown): Promise<IpcResult<void>>; getSchedule(year: number): Promise<IpcResult<unknown[]>> };
   accounts: { list(id?: string): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>> };
   assets: { list(cat?: string): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>> };
   portfolio: {

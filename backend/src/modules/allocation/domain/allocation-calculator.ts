@@ -59,14 +59,16 @@ export function calculateAssetDeviations(
 ): AssetDeviation[] {
   return targets.map((t) => {
     const catTotal = categoryValues[t.category] ?? 0;
-    const real = percentOf(t.value, catTotal);
+    const real = catTotal === 0 ? 0 : percentOf(t.value, catTotal);
     const dev = deviation(real, t.targetPercent);
     const sign = dev >= 0 ? '+' : '';
 
     return {
       assetId: t.assetId,
       deviation: dev,
-      message: `${t.symbol} est?? ${sign}${round2(dev)}% em rela????o ?? aloca????o ideal na categoria`,
+      message: catTotal === 0
+        ? `${t.symbol} sem valuation disponivel para a categoria ${t.category}`
+        : `${t.symbol} esta ${sign}${round2(dev)}% em relacao a alocacao ideal na categoria`,
       needsRebalance: needsRebalance(dev, threshold),
       realPercent: real,
       symbol: t.symbol,

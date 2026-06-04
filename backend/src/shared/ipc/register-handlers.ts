@@ -22,6 +22,7 @@ import {
   setCategoryAllocationSchema,
   setMonthlyBlockSchema,
   simulateContributionSchema,
+  updateInvestmentBlockSchema,
 } from '@spectre/data-contracts';
 import { ipcMain } from 'electron';
 
@@ -45,6 +46,8 @@ import { ImportService } from '../../modules/import/application/import-service.j
 import { PrismaImportRepository } from '../../modules/import/infrastructure/prisma-import-repository.js';
 import { InstitutionsService } from '../../modules/institutions/application/institutions-service.js';
 import { PrismaInstitutionRepository } from '../../modules/institutions/infrastructure/prisma-institution-repository.js';
+import { InvestmentBlocksService } from '../../modules/investment-blocks/application/investment-blocks-service.js';
+import { PrismaInvestmentBlocksRepository } from '../../modules/investment-blocks/infrastructure/prisma-investment-blocks-repository.js';
 import { MarketDataService } from '../../modules/market-data/application/market-data-service.js';
 import { PrismaMarketDataRepository } from '../../modules/market-data/infrastructure/prisma-market-data-repository.js';
 import { PatrimonyService } from '../../modules/patrimony-history/application/patrimony-service.js';
@@ -68,6 +71,7 @@ function lazyServices(ctx: AppContext) {
     if (!cache) {
       cache = createServices(ctx);
     }
+
     return cache;
   };
 }
@@ -75,6 +79,7 @@ function lazyServices(ctx: AppContext) {
 function createServices(ctx: AppContext) {
   const db = ctx.getUserClient();
   const institutionsRepo = new PrismaInstitutionRepository(db);
+  const investmentBlocksRepo = new PrismaInvestmentBlocksRepository(db);
   const accountsRepo = new PrismaAccountRepository(db);
   const assetsRepo = new PrismaAssetRepository(db);
   const portfolioRepo = new PrismaPortfolioRepository(db);
@@ -100,6 +105,7 @@ function createServices(ctx: AppContext) {
 
   return {
     institutions: new InstitutionsService(ctx, institutionsRepo),
+    investmentBlocks: new InvestmentBlocksService(ctx, investmentBlocksRepo),
     accounts: new AccountsService(ctx, accountsRepo),
     assets: new AssetsService(ctx, assetsRepo),
     portfolio,
@@ -317,6 +323,32 @@ export function registerIpcHandlers(ctx: AppContext): void {
   });
   ipcMain.handle('patrimony:list', async (_e, portfolioId: string) =>
     toIpcResult(await getServices().patrimony.listHistory(portfolioId)),
+  );
+
+  ipcMain.handle('investmentBlocks:list', async () => toIpcResult(await getServices().investmentBlocks.list()));
+  ipcMain.handle('investmentBlocks:getById', async (_e, id: string) =>
+    toIpcResult(await getServices().investmentBlocks.getById(id)),
+  );
+  ipcMain.handle('investmentBlocks:create', async (_e, raw) => {
+    const input = createInvestmentBlockSchema.parse(raw);
+
+    return toIpcResult(await getServices().investmentBlocks.createBlock(input.name, input.assetIds));
+  });
+  ipcMain.handle('investmentBlocks:update', async (_e, raw) => {
+    const input = updateInvestmentBlockSchema.parse(raw);
+
+    return toIpcResult(await getServices().investmentBlocks.update(input));
+  });
+  ipcMain.handle('investmentBlocks:remove', async (_e, raw: { id: string }) =>
+    toIpcResult(await getServices().investmentBlocks.remove(raw.id)),
+  );
+  ipcMain.handle('investmentBlocks:setMonthlyBlock', async (_e, raw) => {
+    const input = setMonthlyBlockSchema.parse(raw);
+
+    return toIpcResult(await getServices().investmentBlocks.setMonthlyBlock(input.year, input.month, input.blockId));
+  });
+  ipcMain.handle('investmentBlocks:getSchedule', async (_e, year: number) =>
+    toIpcResult(await getServices().investmentBlocks.getSchedule(year)),
   );
 
   ipcMain.handle('tax:preview', async (_e, raw) => {

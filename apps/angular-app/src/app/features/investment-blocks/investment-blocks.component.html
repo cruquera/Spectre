@@ -1,0 +1,92 @@
+<h2 class="text-2xl font-bold mb-4">Blocos de Investimento</h2>
+
+@if (loading()) {
+  <div class="text-spectre-muted">Carregando...</div>
+} @else {
+  @if (msg()) {
+    <div class="mb-4 p-2 rounded bg-slate-700 text-sm">{{ msg() }}</div>
+  }
+
+  <div class="flex gap-4 mb-6">
+    <button class="px-4 py-2 rounded bg-spectre-accent text-sm" (click)="startCreate()">Novo Bloco</button>
+  </div>
+
+  @if (editingBlock() !== undefined) {
+    <div class="mb-6 p-4 bg-spectre-surface rounded border border-slate-700 max-w-xl">
+      @if (editingBlock()) {
+        <h3 class="text-lg font-bold mb-3">Editar: {{ editingBlock()!.name }}</h3>
+      } @else {
+        <h3 class="text-lg font-bold mb-3">Novo Bloco</h3>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <input formControlName="name" placeholder="Nome do bloco" class="w-full px-3 py-2 rounded bg-slate-800 border border-slate-600 mb-3" />
+
+        <label class="block text-sm text-spectre-muted mb-2">Ativos (selecione para adicionar ao bloco):</label>
+        <div class="grid grid-cols-2 gap-1 mb-3 max-h-48 overflow-y-auto">
+          @for (a of assets(); track a.id) {
+            <label class="flex items-center gap-2 text-sm p-1 rounded hover:bg-slate-700 cursor-pointer">
+              <input type="checkbox" [checked]="selectedAssetIds().has(a.id)" (change)="toggleAsset(a.id)" class="accent-spectre-accent" />
+              {{ a.symbol }} — {{ a.name }}
+            </label>
+          }
+        </div>
+
+        <div class="flex gap-2">
+          <button type="submit" class="px-4 py-2 rounded bg-spectre-accent text-sm" [disabled]="form.invalid">
+            {{ editingBlock() ? 'Atualizar' : 'Criar' }}
+          </button>
+          <button type="button" class="px-4 py-2 rounded bg-slate-700 text-sm" (click)="cancelEdit()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+    <div>
+      <h3 class="text-lg font-bold mb-2">Blocos</h3>
+      @if (blocks().length === 0) {
+        <p class="text-spectre-muted text-sm">Nenhum bloco criado.</p>
+      } @else {
+        <div class="space-y-2 text-sm">
+          @for (b of blocks(); track b.id) {
+            <div class="p-3 bg-spectre-surface rounded border border-slate-700 flex items-center justify-between">
+              <span>{{ b.name }}</span>
+              <div class="flex gap-2">
+                <button class="px-2 py-1 rounded bg-slate-700 text-xs" (click)="startEdit(b)">Editar</button>
+                <button class="px-2 py-1 rounded bg-red-800 text-xs" (click)="removeBlock(b.id)">Remover</button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div>
+      <h3 class="text-lg font-bold mb-2">Calendário {{ calendarYear() }}</h3>
+      <div class="flex gap-2 mb-3">
+        <button class="px-3 py-1 rounded bg-slate-700 text-sm" (click)="prevYear()">‹</button>
+        <button class="px-3 py-1 rounded bg-slate-700 text-sm" (click)="nextYear()">›</button>
+      </div>
+      <div class="grid grid-cols-3 gap-2 text-sm">
+        @for (m of MONTHS; track m; let i = $index) {
+          <div class="p-2 bg-spectre-surface rounded border border-slate-700">
+            <div class="text-spectre-muted text-xs mb-1">{{ m }}</div>
+            @let mb = monthBlock(i + 1);
+            @if (mb) {
+              <div class="text-xs truncate">{{ mb.name }}</div>
+              <button class="text-xs text-red-400 mt-1" (click)="setBlockForMonth(i + 1, '')">Limpar</button>
+            } @else {
+              <select class="w-full text-xs bg-slate-800 rounded px-1 py-0.5" (change)="setBlockForMonth(i + 1, $any($event.target).value)">
+                <option value="">—</option>
+                @for (b of blocks(); track b.id) {
+                  <option [value]="b.id">{{ b.name }}</option>
+                }
+              </select>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}

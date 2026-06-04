@@ -28,6 +28,10 @@ export class IpcService {
     return this.api.institutions;
   }
 
+  public get investmentBlocks(): Window['spectre']['investmentBlocks'] {
+    return this.api.investmentBlocks;
+  }
+
   public get accounts(): Window['spectre']['accounts'] {
     return this.api.accounts;
   }

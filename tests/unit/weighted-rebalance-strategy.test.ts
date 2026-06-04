@@ -1,4 +1,4 @@
-import { WeightedRebalanceStrategy } from '../../backend/modules/strategies/infrastructure/weighted-rebalance-strategy';
+import { WeightedRebalanceStrategy } from '../../backend/src/modules/strategies/infrastructure/weighted-rebalance-strategy.js';
 
 describe('WeightedRebalanceStrategy', () => {
   const strategy = new WeightedRebalanceStrategy();

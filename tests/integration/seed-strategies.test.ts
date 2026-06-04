@@ -1,4 +1,4 @@
-import { seedDefaultStrategies } from '../../backend/shared/database/seed-defaults';
+import { seedDefaultStrategies } from '../../backend/src/shared/database/seed-defaults.js';
 
 describe('seedDefaultStrategies', () => {
   it('is a function', () => {

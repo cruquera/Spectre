@@ -17,6 +17,11 @@ export const createInvestmentBlockSchema = z.object({
   name: z.string().min(1),
 });
 
+export const updateInvestmentBlockSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+});
+
 export const setMonthlyBlockSchema = z.object({
   blockId: z.string(),
   month: z.number().int().min(1).max(12),

@@ -1,6 +1,6 @@
-import type { BrokerageNoteRepository } from '../../backend/modules/brokerage-notes/application/brokerage-note-repository';
-import { BrokerageNotesService } from '../../backend/modules/brokerage-notes/application/brokerage-notes-service';
-import { AppContext } from '../../backend/shared/app-context';
+import type { BrokerageNoteRepository } from '../../backend/src/modules/brokerage-notes/application/brokerage-note-repository.js';
+import { BrokerageNotesService } from '../../backend/src/modules/brokerage-notes/application/brokerage-notes-service.js';
+import { AppContext } from '../../backend/src/shared/app-context.js';
 
 const mockRepo: BrokerageNoteRepository = {
   linkOperation: () => Promise.resolve({

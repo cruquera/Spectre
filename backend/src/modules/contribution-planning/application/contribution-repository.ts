@@ -1,5 +1,5 @@
+import type { BlockAsset, InvestmentBlock } from '../../investment-blocks/domain/investment-blocks.js';
 import type { ContributionPlan, ContributionSuggestion } from '../domain/contribution-plan.js';
-import type { BlockAsset, InvestmentBlock } from '../domain/investment-block.js';
 
 export type ContributionRepository = {
   createBlock(name: string): Promise<InvestmentBlock>;

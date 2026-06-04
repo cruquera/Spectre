@@ -2,9 +2,9 @@ import type { ContributionRepository } from './contribution-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
 import { type Result, ok } from '../../../shared/kernel/result.js';
 import { AllocationService } from '../../allocation/application/allocation-service.js';
+import type { InvestmentBlock } from '../../investment-blocks/domain/investment-blocks.js';
 import { StrategyRegistry } from '../../strategies/application/strategy-registry.js';
 import type { StrategySuggestion } from '../../strategies/domain/contribution-strategy.js';
-import type { InvestmentBlock } from '../domain/investment-block.js';
 
 export class ContributionService {
   private readonly registry = new StrategyRegistry();

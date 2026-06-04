@@ -1,7 +1,7 @@
 import {
   calculateAssetDeviations,
   calculateCategoryDeviations,
-} from '../../backend/modules/allocation/domain/allocation-calculator';
+} from '../../backend/src/modules/allocation/domain/allocation-calculator.js';
 
 describe('AllocationCalculator', () => {
   it('calculates category deviations', () => {
@@ -43,5 +43,25 @@ describe('AllocationCalculator', () => {
     expect(result[0].realPercent).toBe(70);
     expect(result[0].needsRebalance).toBe(true);
     expect(result[0].message).toContain('BTC');
+  });
+
+  it('handles catTotal = 0 gracefully', () => {
+    const result = calculateAssetDeviations(
+      [
+        {
+          assetId: '1',
+          category: 'CRYPTO',
+          symbol: 'BTC',
+          targetPercent: 100,
+          value: 0,
+        },
+      ],
+      { CRYPTO: 0 },
+      5,
+    );
+
+    expect(result[0].realPercent).toBe(0);
+    expect(result[0].deviation).toBe(-100);
+    expect(result[0].needsRebalance).toBe(true);
   });
 });

@@ -1,7 +1,7 @@
 import type { PrismaClient as UserPrismaClient } from '../../../../node_modules/.prisma/user-client/index.js';
+import type { BlockAsset, InvestmentBlock } from '../../investment-blocks/domain/investment-blocks.js';
 import type { ContributionRepository } from '../application/contribution-repository.js';
 import type { ContributionPlan, ContributionSuggestion } from '../domain/contribution-plan.js';
-import type { BlockAsset, InvestmentBlock } from '../domain/investment-block.js';
 
 export class PrismaContributionRepository implements ContributionRepository {
   public constructor(private readonly db: UserPrismaClient) {}

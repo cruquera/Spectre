@@ -59,6 +59,15 @@ const spectre = {
     create: (data: unknown) => ipcRenderer.invoke('institutions:create', data),
     list: () => ipcRenderer.invoke('institutions:list'),
   },
+  investmentBlocks: {
+    create: (data: unknown) => ipcRenderer.invoke('investmentBlocks:create', data),
+    getById: (id: string) => ipcRenderer.invoke('investmentBlocks:getById', id),
+    getSchedule: (year: number) => ipcRenderer.invoke('investmentBlocks:getSchedule', year),
+    list: () => ipcRenderer.invoke('investmentBlocks:list'),
+    remove: (data: unknown) => ipcRenderer.invoke('investmentBlocks:remove', data),
+    setMonthlyBlock: (data: unknown) => ipcRenderer.invoke('investmentBlocks:setMonthlyBlock', data),
+    update: (data: unknown) => ipcRenderer.invoke('investmentBlocks:update', data),
+  },
   invoke<T>(channel: string, payload?: unknown): Promise<IpcResult<T>> {
     return ipcRenderer.invoke(channel, payload) as Promise<IpcResult<T>>;
   },

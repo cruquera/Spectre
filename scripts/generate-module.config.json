@@ -1,0 +1,5 @@
+﻿{
+  "name": "generate:module",
+  "description": "Scaffold a new backend module + frontend feature with tests",
+  "script": "node scripts/generate-module.mjs"
+}

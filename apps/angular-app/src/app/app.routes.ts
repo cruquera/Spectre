@@ -70,6 +70,12 @@ export const routes: Routes = [
       },
       {
         loadComponent: () =>
+          import('./features/investment-blocks/investment-blocks.component').then((m) => m.InvestmentBlocksComponent),
+        path: 'investment-blocks',
+      },
+
+      {
+        loadComponent: () =>
           import('./features/settings/settings.component').then((m) => m.SettingsComponent),
         path: 'settings',
       },
