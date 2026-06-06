@@ -32,6 +32,8 @@ const OLD_TABLES = [
   'PatrimonySnapshot',
   'RebalanceAnalysis',
   'TaxReport',
+  'PortfolioProject',
+  'RealPortfolioAsset',
 ];
 
 function loadSql(filename: string): string {
@@ -82,7 +84,7 @@ export function runUserMigrations(dbPath: string): void {
       return;
     }
 
-    if (!columnExists(db, 'UserProfile', 'tourCompleted')) {
+    if (!columnExists(db, 'UserProfile', 'onboardingStatus') || !columnExists(db, 'UserProfile', 'onboardingCurrentStep')) {
       dropOldTables(db);
       db.exec(loadSql('user-init.sql'));
 
@@ -91,8 +93,27 @@ export function runUserMigrations(dbPath: string): void {
 
     if (!tableExists(db, 'Account')) {
       db.exec(loadSql('user-migration-001.sql'));
-    } else if (!tableExists(db, 'PortfolioProject')) {
-      db.exec(loadSql('user-migration-002.sql'));
+    } else if (!tableExists(db, 'PortfolioTemplate')) {
+      dropOldTables(db);
+      db.exec(loadSql('user-init.sql'));
+    } else if (!columnExists(db, 'PortfolioTemplate', 'strategy')) {
+      db.exec(`ALTER TABLE "PortfolioTemplate" ADD COLUMN "strategy" TEXT NOT NULL DEFAULT 'FREE_ALLOCATION'`);
+    }
+
+    if (!columnExists(db, 'PortfolioTemplate', 'description')) {
+      db.exec(`ALTER TABLE "PortfolioTemplate" ADD COLUMN "description" TEXT`);
+    }
+
+    if (!columnExists(db, 'PortfolioTemplate', 'baseCurrency')) {
+      db.exec(`ALTER TABLE "PortfolioTemplate" ADD COLUMN "baseCurrency" TEXT NOT NULL DEFAULT 'BRL'`);
+    }
+
+    if (!columnExists(db, 'PortfolioTemplate', 'isDefault')) {
+      db.exec(`ALTER TABLE "PortfolioTemplate" ADD COLUMN "isDefault" BOOLEAN NOT NULL DEFAULT false`);
+    }
+
+    if (tableExists(db, 'PortfolioAssetTarget') && !columnExists(db, 'PortfolioAssetTarget', 'classTargetId')) {
+      db.exec(`ALTER TABLE "PortfolioAssetTarget" ADD COLUMN "classTargetId" TEXT`);
     }
   } finally {
     db.close();

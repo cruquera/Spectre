@@ -8,27 +8,70 @@ datasource db {
   url      = "file:./user.db"
 }
 
-enum AssetType {
-  STOCKPICKING
-  CRYPTO
-  DEBENTURE
-  INVESTMENT_FUND
-  PENSION_FUND
-  FII
-  ETF
-  BDR
-  TREASURY
+enum PortfolioStrategy {
+  FREE_ALLOCATION
+  ASSET_CLASS_ALLOCATION
+}
+
+enum BenchmarkType {
+  SP500
+  CDI
+  IPCA
+  IBOVESPA
+  NASDAQ100
+  BITCOIN
+}
+
+enum AssetClass {
+  cash_reserve
+  fixed_income_post
+  fixed_income_pre
+  fixed_income_inflation
+  debentures
+  investment_funds
+  retirement_funds
+  real_estate_funds
+  etf_brazil
+  etf_global
+  stock_picking_b3
+  stock_picking_nasdaq
+  stock_picking_nyse
+  stock_picking_europe
+  stock_picking_asia
+  reits
+  commodities
+  precious_metals
+  crypto
+  alternative_assets
+}
+
+enum OnboardingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  ABANDONED
+  COMPLETED
+}
+
+enum EventType {
+  INVESTMENT_CONTRIBUTION
+  ASSET_PURCHASE
+  ASSET_SALE
+  DIVIDEND_INCOME
+  INTEREST_INCOME
+  CRYPTO_STAKING
+  MANUAL_ADJUSTMENT
 }
 
 model UserProfile {
-  id              String        @id @default(cuid())
-  displayName     String
-  tourCompleted   Boolean       @default(false)
-  tourCurrentStep Int           @default(0)
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  accounts        Account[]
-  projects        PortfolioProject[]
+  id                    String            @id @default(cuid())
+  displayName           String
+  onboardingStatus      OnboardingStatus  @default(NOT_STARTED)
+  onboardingCurrentStep Int               @default(0)
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  accounts              Account[]
+  templates             PortfolioTemplate[]
+  portfolios            InvestmentPortfolio[]
 }
 
 model Account {
@@ -40,40 +83,68 @@ model Account {
   updatedAt       DateTime    @updatedAt
   userProfileId   String
   userProfile     UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
-  realAllocations RealPortfolioAsset[]
+  ledgerEvents    LedgerEvent[]
 }
 
-model PortfolioProject {
-  id            String      @id @default(cuid())
+model PortfolioTemplate {
+  id            String                  @id @default(cuid())
   name          String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  description   String?
+  strategy      PortfolioStrategy       @default(FREE_ALLOCATION)
+  benchmark     String?
+  baseCurrency  String                  @default("BRL")
+  isDefault     Boolean                 @default(false)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
   userProfileId String
-  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
-  assets        Asset[]
-  realPortfolio RealPortfolioAsset[]
+  userProfile   UserProfile             @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  targets       PortfolioAssetTarget[]
+  portfolios    InvestmentPortfolio[]
 }
 
-model Asset {
-  id                String           @id @default(cuid())
-  type              AssetType
-  targetPercentage  Float
-  initialValue      Float            @default(0)
-  name              String?
-  portfolioProjectId String
-  portfolioProject  PortfolioProject @relation(fields: [portfolioProjectId], references: [id], onDelete: Cascade)
-  realAllocations   RealPortfolioAsset[]
+model PortfolioAssetTarget {
+  id                       String                @id @default(cuid())
+  assetClass               AssetClass
+  optionalTickerDescription String?
+  allocationPercentage     Float
+  minimumInvestment        Float                 @default(0)
+  fractionalAllowed        Boolean               @default(true)
+  lotSize                  Int                   @default(1)
+  classTargetId            String?
+  classTarget              PortfolioAssetTarget? @relation("ClassTargetHierarchy", fields: [classTargetId], references: [id])
+  subTargets               PortfolioAssetTarget[] @relation("ClassTargetHierarchy")
+  templateId               String
+  template                 PortfolioTemplate     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  ledgerEvents             LedgerEvent[]
 }
 
-model RealPortfolioAsset {
-  id                String           @id @default(cuid())
-  actualValue       Float
-  assetId           String
-  asset             Asset            @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  accountId         String
-  account           Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  projectId         String
-  project           PortfolioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+model InvestmentPortfolio {
+  id            String        @id @default(cuid())
+  name          String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  userProfileId String
+  userProfile   UserProfile   @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  templateId    String
+  template      PortfolioTemplate @relation(fields: [templateId], references: [id])
+  ledgerEvents  LedgerEvent[]
+}
+
+model LedgerEvent {
+  id            String       @id @default(cuid())
+  eventType     EventType
+  grossAmount   Float
+  feesAmount    Float        @default(0)
+  taxAmount     Float        @default(0)
+  netAmount     Float
+  currency      String
+  occurredAt    DateTime
+  notes         String?
+  createdAt     DateTime     @default(now())
+  portfolioId   String
+  portfolio     InvestmentPortfolio  @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  accountId     String
+  account       Account      @relation(fields: [accountId], references: [id])
+  assetTargetId String
+  assetTarget   PortfolioAssetTarget @relation(fields: [assetTargetId], references: [id])
 }

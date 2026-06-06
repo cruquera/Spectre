@@ -5,16 +5,30 @@ import { Router, RouterLink } from '@angular/router';
 import { IpcService } from '../../core/services/ipc.service';
 
 const AVATAR_COLORS = [
-  '#e50914', '#ff6b35', '#ffc107', '#4caf50', '#2196f3',
-  '#9c27b0', '#ff4081', '#00bcd4', '#ff9800', '#607d8b',
-  '#795548', '#03a9f4', '#8bc34a', '#e91e63', '#009688',
+  '#e50914',
+  '#ff6b35',
+  '#ffc107',
+  '#4caf50',
+  '#2196f3',
+  '#9c27b0',
+  '#ff4081',
+  '#00bcd4',
+  '#ff9800',
+  '#607d8b',
+  '#795548',
+  '#03a9f4',
+  '#8bc34a',
+  '#e91e63',
+  '#009688',
 ];
 
 function hashColor(name: string): string {
   let hash = 0;
+
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
+
   return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
 }
 
@@ -87,12 +101,12 @@ export class ProfileSelectComponent implements OnInit {
         username,
       });
 
-      const tourRes = await this.ipc.tour.getState();
+      const onboardingRes = await this.ipc.onboarding.getState();
 
-      if (tourRes.success && tourRes.data.completed) {
+      if (onboardingRes.success && onboardingRes.data.status === 'COMPLETED') {
         await this.router.navigate(['/dashboard']);
       } else {
-        await this.router.navigate(['/tour']);
+        await this.router.navigate(['/onboarding']);
       }
     } else {
       this.error.set('Senha incorreta');

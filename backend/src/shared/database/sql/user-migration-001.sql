@@ -9,34 +9,58 @@ CREATE TABLE IF NOT EXISTS "Account" (
     CONSTRAINT "Account_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "PortfolioProject" (
+CREATE TABLE IF NOT EXISTS "PortfolioTemplate" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "strategy" TEXT NOT NULL DEFAULT 'FREE_ALLOCATION',
+    "baseCurrency" TEXT NOT NULL DEFAULT 'BRL',
+    "isDefault" BOOLEAN NOT NULL DEFAULT false,
+    "benchmark" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userProfileId" TEXT NOT NULL,
+    CONSTRAINT "PortfolioTemplate_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "PortfolioAssetTarget" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "assetClass" TEXT NOT NULL CHECK("assetClass" IN ('cash_reserve','fixed_income_post','fixed_income_pre','fixed_income_inflation','debentures','investment_funds','retirement_funds','real_estate_funds','etf_brazil','etf_global','stock_picking_b3','stock_picking_nasdaq','stock_picking_nyse','stock_picking_europe','stock_picking_asia','reits','commodities','precious_metals','crypto','alternative_assets')),
+    "optionalTickerDescription" TEXT,
+    "allocationPercentage" REAL NOT NULL,
+    "minimumInvestment" REAL NOT NULL DEFAULT 0,
+    "fractionalAllowed" BOOLEAN NOT NULL DEFAULT true,
+    "lotSize" INTEGER NOT NULL DEFAULT 1,
+    "templateId" TEXT NOT NULL,
+    CONSTRAINT "PortfolioAssetTarget_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "PortfolioTemplate" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "InvestmentPortfolio" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "userProfileId" TEXT NOT NULL,
-    CONSTRAINT "PortfolioProject_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "templateId" TEXT NOT NULL,
+    CONSTRAINT "InvestmentPortfolio_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "InvestmentPortfolio_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "PortfolioTemplate" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS "Asset" (
+CREATE TABLE IF NOT EXISTS "LedgerEvent" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "type" TEXT NOT NULL CHECK("type" IN ('STOCKPICKING','CRYPTO','DEBENTURE','INVESTMENT_FUND','PENSION_FUND','FII','ETF','BDR','TREASURY')),
-    "targetPercentage" REAL NOT NULL,
-    "initialValue" REAL NOT NULL DEFAULT 0,
-    "name" TEXT,
-    "portfolioProjectId" TEXT NOT NULL,
-    CONSTRAINT "Asset_portfolioProjectId_fkey" FOREIGN KEY ("portfolioProjectId") REFERENCES "PortfolioProject" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS "RealPortfolioAsset" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "actualValue" REAL NOT NULL,
-    "assetId" TEXT NOT NULL,
-    "accountId" TEXT NOT NULL,
-    "projectId" TEXT NOT NULL,
+    "eventType" TEXT NOT NULL CHECK("eventType" IN ('INVESTMENT_CONTRIBUTION','ASSET_PURCHASE','ASSET_SALE','DIVIDEND_INCOME','INTEREST_INCOME','CRYPTO_STAKING','MANUAL_ADJUSTMENT')),
+    "grossAmount" REAL NOT NULL,
+    "feesAmount" REAL NOT NULL DEFAULT 0,
+    "taxAmount" REAL NOT NULL DEFAULT 0,
+    "netAmount" REAL NOT NULL,
+    "currency" TEXT NOT NULL,
+    "occurredAt" DATETIME NOT NULL,
+    "notes" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    CONSTRAINT "RealPortfolioAsset_assetId_fkey" FOREIGN KEY ("assetId") REFERENCES "Asset" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "RealPortfolioAsset_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "RealPortfolioAsset_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "PortfolioProject" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "portfolioId" TEXT NOT NULL,
+    "accountId" TEXT NOT NULL,
+    "assetTargetId" TEXT NOT NULL,
+    CONSTRAINT "LedgerEvent_portfolioId_fkey" FOREIGN KEY ("portfolioId") REFERENCES "InvestmentPortfolio" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "LedgerEvent_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT "LedgerEvent_assetTargetId_fkey" FOREIGN KEY ("assetTargetId") REFERENCES "PortfolioAssetTarget" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );

@@ -1,7 +1,7 @@
+import type { AccountRepository } from './account-repository.js';
 import type { AppContext } from '../../../shared/app-context.js';
 import { AppError, type Result, err, ok } from '../../../shared/kernel/result.js';
 import type { Account } from '../domain/account.js';
-import type { AccountRepository } from './account-repository.js';
 
 export class AccountsService {
   public constructor(
@@ -25,7 +25,7 @@ export class AccountsService {
     currency: string,
   ): Promise<Result<Account, AppError>> {
     try {
-      const session = this.ctx.requireSession();
+      this.ctx.requireSession();
       const db = this.ctx.getUserClient();
       const profile = await db.userProfile.findFirst();
 

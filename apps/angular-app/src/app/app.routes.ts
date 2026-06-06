@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { authGuard } from './core/guards/auth.guard';
-import { tourGuard } from './core/guards/tour.guard';
+import { onboardingGuard } from './core/guards/onboarding.guard';
 
 export const routes: Routes = [
   {
@@ -11,8 +11,8 @@ export const routes: Routes = [
   {
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/tour/tour-wizard.component').then((m) => m.TourWizardComponent),
-    path: 'tour',
+      import('./features/onboarding/onboarding-wizard.component').then((m) => m.OnboardingWizardComponent),
+    path: 'onboarding',
   },
   {
     canActivate: [authGuard],
@@ -24,22 +24,22 @@ export const routes: Routes = [
         path: 'dashboard',
       },
       {
-        canActivate: [tourGuard],
+        canActivate: [onboardingGuard],
         loadComponent: () =>
           import('./features/accounts/accounts-list.component').then((m) => m.AccountsListComponent),
         path: 'accounts',
       },
       {
-        canActivate: [tourGuard],
+        canActivate: [onboardingGuard],
         loadComponent: () =>
-          import('./features/projects/projects-list.component').then((m) => m.ProjectsListComponent),
-        path: 'projects',
+          import('./features/portfolio-templates/portfolio-templates-list.component').then((m) => m.PortfolioTemplatesListComponent),
+        path: 'portfolio-templates',
       },
       {
-        canActivate: [tourGuard],
+        canActivate: [onboardingGuard],
         loadComponent: () =>
-          import('./features/real-portfolio/real-portfolio.component').then((m) => m.RealPortfolioComponent),
-        path: 'real-portfolio/:projectId',
+          import('./features/investment-portfolio/investment-portfolio.component').then((m) => m.InvestmentPortfolioComponent),
+        path: 'investment-portfolio/:templateId',
       },
     ],
     loadComponent: () => import('./core/layout/shell.component').then((m) => m.ShellComponent),

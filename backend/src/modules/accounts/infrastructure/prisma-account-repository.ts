@@ -1,6 +1,6 @@
 import type { PrismaClient as UserPrismaClient } from '../../../../node_modules/.prisma/user-client/index.js';
-import type { Account } from '../domain/account.js';
 import type { AccountRepository } from '../application/account-repository.js';
+import type { Account } from '../domain/account.js';
 
 export class PrismaAccountRepository implements AccountRepository {
   public constructor(private readonly db: UserPrismaClient) {}

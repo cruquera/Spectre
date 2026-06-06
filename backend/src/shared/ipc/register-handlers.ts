@@ -1,23 +1,22 @@
 import {
   createAccountSchema,
-  createPortfolioProjectSchema,
+  createPortfolioTemplateSchema,
   createProfileRequestSchema,
   loginRequestSchema,
-  updateTourStepSchema,
+  updateOnboardingStepSchema,
 } from '@spectre/data-contracts';
 import { ipcMain } from 'electron';
 
-import { AccountsService } from '../../modules/accounts/index.js';
-import { PrismaAccountRepository } from '../../modules/accounts/index.js';
+import { AccountsService, PrismaAccountRepository } from '../../modules/accounts/index.js';
 import { IdentityService } from '../../modules/identity/index.js';
-import { PortfolioProjectService, PrismaPortfolioProjectRepository } from '../../modules/portfolio-projects/index.js';
-import { TourService } from '../../modules/tour/index.js';
+import { OnboardingService } from '../../modules/onboarding/index.js';
+import { PortfolioTemplateService, PrismaPortfolioTemplateRepository } from '../../modules/portfolio-template/index.js';
 import type { AppContext } from '../app-context.js';
 import { AppError, err, ok, toIpcResult } from '../kernel/result.js';
 
 export function registerIpcHandlers(ctx: AppContext): void {
   const identity = new IdentityService(ctx);
-  const tour = new TourService(ctx);
+  const onboarding = new OnboardingService(ctx);
 
   const getAccountsService = () => {
     const db = ctx.getUserClient();
@@ -25,10 +24,10 @@ export function registerIpcHandlers(ctx: AppContext): void {
     return new AccountsService(ctx, new PrismaAccountRepository(db));
   };
 
-  const getPortfolioProjectService = () => {
+  const getPortfolioTemplateService = () => {
     const db = ctx.getUserClient();
 
-    return new PortfolioProjectService(ctx, new PrismaPortfolioProjectRepository(db));
+    return new PortfolioTemplateService(ctx, new PrismaPortfolioTemplateRepository(db));
   };
 
   ipcMain.handle('identity:listProfiles', async () =>
@@ -51,7 +50,7 @@ export function registerIpcHandlers(ctx: AppContext): void {
 
   ipcMain.handle('identity:logout', async () => toIpcResult(await identity.logout()));
 
-  ipcMain.handle('identity:session', async () => {
+  ipcMain.handle('identity:session', () => {
     const session = ctx.getSession();
 
     if (session) {
@@ -61,14 +60,14 @@ export function registerIpcHandlers(ctx: AppContext): void {
     return toIpcResult(err(new AppError('NO_SESSION', 'Not logged in')));
   });
 
-  ipcMain.handle('tour:getState', async () => toIpcResult(await tour.getState()));
-  ipcMain.handle('tour:updateStep', async (_e, raw) => {
-    const input = updateTourStepSchema.parse(raw);
+  ipcMain.handle('onboarding:getState', async () => toIpcResult(await onboarding.getState()));
+  ipcMain.handle('onboarding:updateStep', async (_e, raw) => {
+    const input = updateOnboardingStepSchema.parse(raw);
 
-    return toIpcResult(await tour.updateStep(input.step));
+    return toIpcResult(await onboarding.updateStep(input.step));
   });
-  ipcMain.handle('tour:complete', async () => toIpcResult(await tour.complete()));
-  ipcMain.handle('tour:abort', async () => toIpcResult(await tour.abort()));
+  ipcMain.handle('onboarding:complete', async () => toIpcResult(await onboarding.complete()));
+  ipcMain.handle('onboarding:abort', async () => toIpcResult(await onboarding.abort()));
 
   ipcMain.handle('accounts:list', async () =>
     toIpcResult(await getAccountsService().list()),
@@ -89,22 +88,25 @@ export function registerIpcHandlers(ctx: AppContext): void {
     toIpcResult(await getAccountsService().delete(id)),
   );
 
-  ipcMain.handle('portfolioProjects:list', async () =>
-    toIpcResult(await getPortfolioProjectService().list()),
+  ipcMain.handle('portfolioTemplates:list', async () =>
+    toIpcResult(await getPortfolioTemplateService().list()),
   );
-  ipcMain.handle('portfolioProjects:create', async (_e, raw) => {
-    const input = createPortfolioProjectSchema.parse(raw);
+  ipcMain.handle('portfolioTemplates:findById', async (_e, id: string) =>
+    toIpcResult(await getPortfolioTemplateService().findById(id)),
+  );
+  ipcMain.handle('portfolioTemplates:create', async (_e, raw) => {
+    const input = createPortfolioTemplateSchema.parse(raw);
 
     return toIpcResult(
-      await getPortfolioProjectService().create(input.name, input.assets),
+      await getPortfolioTemplateService().create(input.name, input.targets, input.benchmark, input.strategy, input.description, input.baseCurrency, input.isDefault),
     );
   });
-  ipcMain.handle('portfolioProjects:update', async (_e, id: string, raw: unknown) => {
-    const input = createPortfolioProjectSchema.partial().parse(raw);
+  ipcMain.handle('portfolioTemplates:update', async (_e, id: string, raw: unknown) => {
+    const input = createPortfolioTemplateSchema.partial().parse(raw);
 
-    return toIpcResult(await getPortfolioProjectService().update(id, input));
+    return toIpcResult(await getPortfolioTemplateService().update(id, input));
   });
-  ipcMain.handle('portfolioProjects:delete', async (_e, id: string) =>
-    toIpcResult(await getPortfolioProjectService().delete(id)),
+  ipcMain.handle('portfolioTemplates:delete', async (_e, id: string) =>
+    toIpcResult(await getPortfolioTemplateService().delete(id)),
   );
 }

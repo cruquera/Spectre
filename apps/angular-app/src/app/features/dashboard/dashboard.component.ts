@@ -10,18 +10,18 @@ import { IpcService } from '../../core/services/ipc.service';
 })
 export class DashboardComponent implements OnInit {
   public get session(): { displayName: string; username: string } | null { return this.ipc.session(); }
-  public readonly tourCompleted = signal(false);
+  public readonly onboardingCompleted = signal(false);
   public readonly accountCount = signal(0);
 
   private readonly ipc = inject(IpcService);
 
   public async ngOnInit(): Promise<void> {
-    const tourRes = await this.ipc.tour.getState();
+    const onboardingRes = await this.ipc.onboarding.getState();
 
-    if (tourRes.success) {
-      this.tourCompleted.set(tourRes.data.completed);
+    if (onboardingRes.success) {
+      this.onboardingCompleted.set(onboardingRes.data.status === 'COMPLETED');
 
-      if (tourRes.data.completed) {
+      if (onboardingRes.data.status === 'COMPLETED') {
         const accountsRes = await this.ipc.accounts.list();
 
         if (accountsRes.success) {

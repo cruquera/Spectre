@@ -2,19 +2,26 @@ export type IpcResult<T> =
   | { success: true; data: T }
   | { success: false; error: { code: string; message: string } };
 
-export interface AssetDto {
+export interface PortfolioAssetTargetDto {
   id: string;
-  type: string;
-  targetPercentage: number;
-  initialValue: number;
-  name: string | null;
-  portfolioProjectId: string;
+  assetClass: string;
+  optionalTickerDescription: string | null;
+  allocationPercentage: number;
+  minimumInvestment: number;
+  fractionalAllowed: boolean;
+  lotSize: number;
+  templateId: string;
 }
 
-export interface PortfolioProjectDto {
+export interface PortfolioTemplateDto {
   id: string;
   name: string;
-  assets: AssetDto[];
+  description: string | null;
+  strategy: string;
+  benchmark: string | null;
+  baseCurrency: string;
+  isDefault: boolean;
+  targets: PortfolioAssetTargetDto[];
   createdAt: string;
   updatedAt: string;
 }
@@ -28,10 +35,10 @@ export interface SpectreApi {
     logout(): Promise<IpcResult<void>>;
     session(): Promise<IpcResult<{ displayName: string; username: string }>>;
   };
-  tour: {
-    getState(): Promise<IpcResult<{ completed: boolean; currentStep: number }>>;
-    updateStep(data: { step: number }): Promise<IpcResult<{ completed: boolean; currentStep: number }>>;
-    complete(): Promise<IpcResult<{ completed: boolean; currentStep: number }>>;
+  onboarding: {
+    getState(): Promise<IpcResult<{ status: string; currentStep: number }>>;
+    updateStep(data: { step: number }): Promise<IpcResult<{ status: string; currentStep: number }>>;
+    complete(): Promise<IpcResult<{ status: string; currentStep: number }>>;
     abort(): Promise<IpcResult<void>>;
   };
   accounts: {
@@ -40,10 +47,11 @@ export interface SpectreApi {
     update(id: string, data: Partial<{ institutionName: string; nickname: string; currency: string }>): Promise<IpcResult<{ id: string; institutionName: string; nickname: string; currency: string }>>;
     delete(id: string): Promise<IpcResult<void>>;
   };
-  portfolioProjects: {
-    list(): Promise<IpcResult<PortfolioProjectDto[]>>;
-    create(data: { name: string; assets: Array<{ type: string; targetPercentage: number; initialValue: number; name?: string | null }> }): Promise<IpcResult<PortfolioProjectDto>>;
-    update(id: string, data: Partial<{ name: string; assets: Array<{ type: string; targetPercentage: number; initialValue: number; name?: string | null }> }>): Promise<IpcResult<PortfolioProjectDto>>;
+  portfolioTemplates: {
+    list(): Promise<IpcResult<PortfolioTemplateDto[]>>;
+    findById(id: string): Promise<IpcResult<PortfolioTemplateDto | null>>;
+    create(data: { name: string; description?: string | null; strategy?: string; baseCurrency?: string; isDefault?: boolean; benchmark?: string | null; targets: Array<{ assetClass: string; optionalTickerDescription?: string | null; allocationPercentage: number; minimumInvestment?: number; fractionalAllowed?: boolean; lotSize?: number; classTargetId?: string | null }> }): Promise<IpcResult<PortfolioTemplateDto>>;
+    update(id: string, data: Partial<{ name: string; description?: string | null; strategy?: string; baseCurrency?: string; isDefault?: boolean; benchmark?: string | null; targets: Array<{ assetClass: string; optionalTickerDescription?: string | null; allocationPercentage: number; minimumInvestment?: number; fractionalAllowed?: boolean; lotSize?: number; classTargetId?: string | null }> }>): Promise<IpcResult<PortfolioTemplateDto>>;
     delete(id: string): Promise<IpcResult<void>>;
   };
 }

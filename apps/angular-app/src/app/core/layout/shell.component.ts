@@ -11,25 +11,25 @@ import { IpcService } from '../services/ipc.service';
 })
 export class ShellComponent implements OnInit {
   public get session(): { displayName: string; username: string } | null { return this.ipc.session(); }
-  public readonly tourCompleted = signal(false);
+  public readonly onboardingCompleted = signal(false);
 
   public readonly nav = [
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Contas', path: '/accounts' },
-    { label: 'Projetos', path: '/projects' },
+    { label: 'Projetos', path: '/portfolio-templates' },
   ];
 
   private readonly ipc = inject(IpcService);
   private readonly router = inject(Router);
 
   public async ngOnInit(): Promise<void> {
-    const res = await this.ipc.tour.getState();
+    const res = await this.ipc.onboarding.getState();
 
     if (res.success) {
-      this.tourCompleted.set(res.data.completed);
+      this.onboardingCompleted.set(res.data.status === 'COMPLETED');
 
-      if (!res.data.completed) {
-        await this.router.navigate(['/tour']);
+      if (res.data.status !== 'COMPLETED') {
+        await this.router.navigate(['/onboarding']);
       }
     }
   }

@@ -12,17 +12,24 @@ const spectre = {
     logout: () => ipcRenderer.invoke('identity:logout'),
     session: () => ipcRenderer.invoke('identity:session'),
   },
-  tour: {
-    getState: () => ipcRenderer.invoke('tour:getState'),
-    updateStep: (data: unknown) => ipcRenderer.invoke('tour:updateStep', data),
-    complete: () => ipcRenderer.invoke('tour:complete'),
-    abort: () => ipcRenderer.invoke('tour:abort'),
+  onboarding: {
+    getState: () => ipcRenderer.invoke('onboarding:getState'),
+    updateStep: (data: unknown) => ipcRenderer.invoke('onboarding:updateStep', data),
+    complete: () => ipcRenderer.invoke('onboarding:complete'),
+    abort: () => ipcRenderer.invoke('onboarding:abort'),
   },
   accounts: {
     list: () => ipcRenderer.invoke('accounts:list'),
     create: (data: unknown) => ipcRenderer.invoke('accounts:create', data),
     update: (id: string, data: unknown) => ipcRenderer.invoke('accounts:update', id, data),
     delete: (id: string) => ipcRenderer.invoke('accounts:delete', id),
+  },
+  portfolioTemplates: {
+    list: () => ipcRenderer.invoke('portfolioTemplates:list'),
+    findById: (id: string) => ipcRenderer.invoke('portfolioTemplates:findById', id),
+    create: (data: unknown) => ipcRenderer.invoke('portfolioTemplates:create', data),
+    update: (id: string, data: unknown) => ipcRenderer.invoke('portfolioTemplates:update', id, data),
+    delete: (id: string) => ipcRenderer.invoke('portfolioTemplates:delete', id),
   },
   invoke<T>(channel: string, payload?: unknown): Promise<IpcResult<T>> {
     return ipcRenderer.invoke(channel, payload) as Promise<IpcResult<T>>;

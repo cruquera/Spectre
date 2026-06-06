@@ -1,0 +1,470 @@
+<div class="max-w-3xl mx-auto py-12 px-4">
+  <div class="mb-8">
+    <h2 class="text-2xl font-bold mb-2">Jornada de Cadastro</h2>
+    <p class="text-slate-400">Configure sua estrutura de investimentos em poucos passos.</p>
+  </div>
+
+  <div class="flex gap-2 mb-8">
+    @for (step of steps; track step.number) {
+      <div class="flex-1 flex items-center gap-2">
+        <div
+          class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium shrink-0"
+          [class.bg-spectre-accent]="step.number <= currentStep()"
+          [class.text-white]="step.number <= currentStep()"
+          [class.bg-slate-700]="step.number > currentStep()"
+          [class.text-slate-400]="step.number > currentStep()"
+        >
+          {{ step.number }}
+        </div>
+        <span
+          class="text-sm"
+          [class.text-white]="step.number <= currentStep()"
+          [class.text-slate-500]="step.number > currentStep()"
+        >
+          {{ step.label }}
+        </span>
+        @if (step.number < steps.length) {
+          <div class="flex-1 h-px bg-slate-700 ml-2"></div>
+        }
+      </div>
+    }
+  </div>
+
+  <div class="bg-spectre-surface rounded-lg border border-slate-700 p-6">
+    @switch (currentStep()) {
+      @case (1) {
+        <h3 class="text-lg font-semibold mb-4">Passo 1: Cadastro de Contas</h3>
+        <p class="text-sm text-slate-400 mb-6">
+          Selecione a instituição financeira, dê um nome para a conta e escolha a moeda.
+        </p>
+
+        <div class="grid grid-cols-3 gap-3 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">Instituição</label>
+            <select
+              [(ngModel)]="institutionName"
+              class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+            >
+              <option value="" disabled>Selecione</option>
+              @for (inst of institutions; track inst) {
+                <option [value]="inst">{{ inst }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Nome / Apelido</label>
+            <input
+              [(ngModel)]="nickname"
+              class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+              placeholder="Ex: Minha Conta"
+              type="text"
+            />
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Moeda</label>
+            <select
+              [(ngModel)]="currency"
+              class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white"
+            >
+              <option value="BRL">BRL (Real)</option>
+              <option value="USD">USD (Dólar)</option>
+              <option value="EUR">EUR (Euro)</option>
+              <option value="GBP">GBP (Libra)</option>
+            </select>
+          </div>
+        </div>
+
+        <button
+          (click)="addAccount()"
+          [disabled]="saving() || !institutionName || !nickname"
+          class="bg-spectre-accent text-white px-4 py-2 rounded text-sm font-medium hover:opacity-90 disabled:opacity-50 mb-6"
+        >
+          {{ saving() ? 'Adicionando...' : 'Adicionar Conta' }}
+        </button>
+
+        @if (accounts().length > 0) {
+          <div class="border-t border-slate-700 pt-4 mb-4">
+            <h4 class="text-sm font-medium text-slate-300 mb-3">
+              Contas adicionadas ({{ accounts().length }})
+            </h4>
+            <div class="space-y-2">
+              @for (acct of accounts(); track acct.id) {
+                <div class="flex items-center justify-between bg-slate-800 rounded px-3 py-2">
+                  <div>
+                    <span class="text-sm font-medium">{{ acct.nickname }}</span>
+                    <span class="text-xs text-slate-400 ml-2">{{ acct.institutionName }} &middot; {{ acct.currency }}</span>
+                  </div>
+                  <button (click)="removeAccount(acct.id)" class="text-red-400 hover:text-red-300 text-sm">Remover</button>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <div class="flex justify-between pt-4 border-t border-slate-700">
+          <button (click)="exitOnboarding()" class="text-red-400 px-4 py-2 rounded hover:text-red-300 text-sm">
+            Sair (progresso será perdido)
+          </button>
+          <button
+            (click)="nextStep()"
+            [disabled]="accounts().length === 0"
+            class="bg-spectre-accent text-white px-6 py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            Avançar
+          </button>
+        </div>
+      }
+
+      @case (2) {
+        <h3 class="text-lg font-semibold mb-4">Passo 2: Estratégia da Carteira</h3>
+        <p class="text-sm text-slate-400 mb-6">
+          Como deseja estruturar sua carteira de investimentos?
+        </p>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          @for (s of strategies; track s.key) {
+            <button
+              (click)="chosenStrategy.set(s.key)"
+              class="relative text-left p-5 rounded-lg border-2 transition-all"
+              [class.border-spectre-accent]="chosenStrategy() === s.key"
+              [class.border-slate-600]="chosenStrategy() !== s.key"
+              [class.bg-spectre-surface]="chosenStrategy() === s.key"
+              [class.bg-slate-800]="chosenStrategy() !== s.key"
+            >
+              @if (s.recommended) {
+                <span class="absolute -top-2 -right-2 bg-spectre-accent text-white text-xs px-2 py-0.5 rounded-full">Recomendado</span>
+              }
+              <h4 class="font-semibold text-white mb-1">{{ s.label }}</h4>
+              <p class="text-sm text-slate-400">{{ s.description }}</p>
+            </button>
+          }
+        </div>
+
+        <div class="flex justify-between pt-4 border-t border-slate-700">
+          <button (click)="prevStep()" class="text-slate-400 px-4 py-2 rounded hover:text-white text-sm">Voltar</button>
+          <button (click)="nextStep()" class="bg-spectre-accent text-white px-6 py-2 rounded font-medium hover:opacity-90">Avançar</button>
+        </div>
+      }
+
+      @case (3) {
+        <h3 class="text-lg font-semibold mb-4">Passo 3: Projeto de Carteira</h3>
+        <p class="text-sm text-slate-400 mb-6">
+          @if (isFreeAllocation()) {
+            Defina os ativos da sua carteira ideal. A soma dos percentuais deve ser exatamente 100%.
+          } @else {
+            Defina as classes de ativos e depois distribua os investimentos dentro de cada uma.
+          }
+        </p>
+
+        <div class="space-y-4 mb-6">
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-sm font-medium mb-1">Nome da Carteira</label>
+              <input
+                [(ngModel)]="templateName"
+                class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+                placeholder="Ex: Growth Global"
+                type="text"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Benchmark</label>
+              <select
+                [(ngModel)]="templateBenchmark"
+                class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+              >
+                @for (b of benchmarks; track b.value) {
+                  <option [value]="b.value">{{ b.label }}</option>
+                }
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Moeda Base</label>
+              <select
+                [(ngModel)]="store.meta().baseCurrency"
+                class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+              >
+                <option value="BRL">BRL (Real)</option>
+                <option value="USD">USD (Dólar)</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Descrição (opcional)</label>
+            <input
+              [(ngModel)]="templateDescription"
+              class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+              placeholder="Ex: Carteira focada em crescimento global"
+              type="text"
+            />
+          </div>
+        </div>
+
+        <div class="border-t border-slate-700 pt-4">
+          <div class="flex gap-3 mb-4 items-end">
+            <div class="flex-1">
+              <label class="block text-sm font-medium mb-1">Classe do Ativo</label>
+              <select
+                [(ngModel)]="targetClass"
+                class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+              >
+                <option value="" disabled>Selecione</option>
+                @for (ac of assetClasses; track ac.value) {
+                  <option [value]="ac.value">{{ ac.label }}</option>
+                }
+              </select>
+            </div>
+            @if (isFreeAllocation()) {
+              <div>
+                <label class="block text-sm font-medium mb-1">Ticker</label>
+                <div class="flex gap-1">
+                  <input
+                    [(ngModel)]="targetTicker"
+                    class="w-36 bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+                    placeholder="Ex: KLBN11"
+                    type="text"
+                  />
+                  <button
+                    (click)="fillTickerFromClass()"
+                    [disabled]="!targetClass"
+                    class="bg-slate-700 text-white px-2 py-2 rounded text-xs hover:bg-slate-600 disabled:opacity-50 shrink-0"
+                    title="Copiar nome da classe"
+                  >Copiar</button>
+                </div>
+              </div>
+            }
+            <div>
+              <label class="block text-sm font-medium mb-1">%</label>
+              <input
+                [(ngModel)]="targetPercentage"
+                class="w-20 bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+                placeholder="Ex: 20"
+                type="number"
+                min="0"
+                max="100"
+                step="0.1"
+              />
+            </div>
+            <div>
+              <button
+                (click)="addTarget()"
+                [disabled]="!targetClass || targetPercentage <= 0"
+                class="bg-spectre-accent text-white px-4 py-2 rounded text-sm font-medium hover:opacity-90 disabled:opacity-50"
+              >+ Adicionar ativo</button>
+            </div>
+          </div>
+
+          @if (store.targets().length > 0) {
+            <div class="mb-4">
+              <h4 class="text-sm font-medium text-slate-300 mb-3">Ativos ({{ store.targets().length }})</h4>
+              <div class="space-y-2">
+                @for (t of store.targets(); track i; let i = $index) {
+                  <div>
+                    <div class="flex items-center justify-between bg-slate-800 rounded px-3 py-2">
+                      <div class="flex items-center gap-3">
+                        <span class="w-3 h-3 rounded-full" [style.background]="'hsl(' + (i * 47 % 360) + ', 60%, 50%)'"></span>
+                        <span class="text-sm font-medium">{{ getAssetClassLabel(t.assetClass) }}</span>
+                        @if (isFreeAllocation() && t.optionalTickerDescription) {
+                          <span class="text-xs text-slate-400">{{ t.optionalTickerDescription }}</span>
+                        }
+                        @if (!isFreeAllocation() && t.subTargets && t.subTargets.length > 0) {
+                          <span class="text-xs text-slate-500">({{ t.subTargets.length }} subativos)</span>
+                        }
+                      </div>
+                      <div class="flex items-center gap-2">
+                        @if (!isFreeAllocation()) {
+                          <button (click)="toggleExpand(i)" class="text-xs text-spectre-accent hover:underline">
+                            {{ expandedParentIndex() === i ? 'Fechar' : 'Subdividir' }}
+                          </button>
+                        }
+                        @if (editingIndex() === i) {
+                          <div class="flex items-center gap-1">
+                            <input
+                              [(ngModel)]="editValue"
+                              class="w-20 bg-slate-800 border border-spectre-accent rounded px-2 py-1 text-white text-sm text-right"
+                              type="number" min="0" max="100" step="0.1"
+                            />
+                            <span class="text-sm text-slate-400">%</span>
+                            <button (click)="saveEdit()" class="text-green-400 hover:text-green-300 text-xs font-medium">Salvar</button>
+                            <button (click)="cancelEdit()" class="text-slate-400 hover:text-white text-xs">Cancelar</button>
+                          </div>
+                        } @else {
+                          <button (click)="startEdit(i)" class="text-xs text-slate-400 hover:text-white" title="Editar porcentagem">Editar</button>
+                          <span class="text-sm font-bold text-spectre-accent">{{ t.allocationPercentage }}%</span>
+                        }
+                        <button (click)="removeTarget(i)" class="text-red-400 hover:text-red-300 text-sm">Remover</button>
+                      </div>
+                    </div>
+
+                    @if (!isFreeAllocation() && expandedParentIndex() === i) {
+                      <div class="ml-6 mt-2 mb-2 bg-slate-900 rounded border border-slate-700 p-3">
+                        <p class="text-xs text-slate-400 mb-2">Distribuição dentro de {{ getAssetClassLabel(t.assetClass) }}</p>
+                        <div class="flex gap-2 items-end mb-2">
+                          <div>
+                            <label class="block text-xs font-medium mb-1">Ativo</label>
+                            <input
+                              [(ngModel)]="subTicker"
+                              class="w-36 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-white text-xs"
+                              placeholder="Ex: Bitcoin" type="text"
+                            />
+                          </div>
+                          <div>
+                            <label class="block text-xs font-medium mb-1">% na classe</label>
+                            <input
+                              [(ngModel)]="subPercentage"
+                              class="w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-white text-xs"
+                              placeholder="Ex: 80" type="number" min="0" max="100" step="0.1"
+                            />
+                          </div>
+                          <button
+                            (click)="addSubTarget()"
+                            [disabled]="!subTicker.trim() || subPercentage <= 0"
+                            class="bg-spectre-accent text-white px-3 py-1.5 rounded text-xs font-medium hover:opacity-90 disabled:opacity-50"
+                          >Adicionar</button>
+                        </div>
+                        @if (t.subTargets && t.subTargets.length > 0) {
+                          <div class="space-y-1">
+                            @for (st of t.subTargets; track j; let j = $index) {
+                              <div class="flex items-center justify-between bg-slate-800 rounded px-2 py-1">
+                                <span class="text-xs">{{ st.optionalTickerDescription }}</span>
+                                <div class="flex items-center gap-2">
+                                  <span class="text-xs font-bold text-spectre-accent">{{ st.allocationPercentage }}%</span>
+                                  <button (click)="removeSubTarget(i, j)" class="text-red-400 hover:text-red-300 text-xs">Remover</button>
+                                </div>
+                              </div>
+                            }
+                          </div>
+                        }
+                        @if (t.subTargets && t.subTargets.length > 0 && subTotalError()) {
+                          <p class="text-xs text-red-400 mt-1">{{ subTotalError() }}</p>
+                        } @else if (t.subTargets && t.subTargets.length > 0) {
+                          <p class="text-xs text-green-400 mt-1">&checkmark; Distribuição válida</p>
+                        }
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <div class="mt-4 flex items-center gap-2 text-sm" [class.text-green-400]="!store.percentageError()" [class.text-red-400]="store.percentageError()">
+                <span class="font-medium">Total alocado:</span>
+                <span>{{ store.totalPercentage().toFixed(1) }}%</span>
+                @if (store.percentageError()) {
+                  <span class="font-semibold">{{ store.percentageError() }}</span>
+                } @else if (store.totalPercentage() > 0) {
+                  <span>&checkmark; 100%</span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+
+        <div class="flex justify-between pt-4 border-t border-slate-700 mt-6">
+          <button (click)="prevStep()" class="text-slate-400 px-4 py-2 rounded hover:text-white text-sm">Voltar</button>
+          <button
+            (click)="nextStep()"
+            [disabled]="!store.canFinish()"
+            class="bg-spectre-accent text-white px-6 py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+          >Avançar</button>
+        </div>
+      }
+
+      @case (4) {
+        <h3 class="text-lg font-semibold mb-4">Passo 4: Resumo da Carteira</h3>
+        <p class="text-sm text-slate-400 mb-6">Revise sua carteira antes de finalizar.</p>
+
+        <div class="space-y-4">
+          <div class="bg-slate-800 rounded p-4">
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span class="text-slate-400">Nome:</span>
+                <span class="text-white ml-2 font-medium">{{ templateName || 'Minha Carteira' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400">Estratégia:</span>
+                <span class="text-white ml-2">{{ chosenStrategy() === 'FREE_ALLOCATION' ? 'Livre' : 'Por Classe de Ativo' }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400">Benchmark:</span>
+                <span class="text-white ml-2">{{ getBenchmarkLabel(templateBenchmark) }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400">Moeda Base:</span>
+                <span class="text-white ml-2">{{ store.meta().baseCurrency }}</span>
+              </div>
+              @if (templateDescription) {
+                <div class="col-span-2">
+                  <span class="text-slate-400">Descrição:</span>
+                  <span class="text-white ml-2">{{ templateDescription }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="bg-slate-800 rounded p-4">
+            <h4 class="text-sm font-medium text-slate-300 mb-3">Composição</h4>
+            <div class="space-y-2">
+              @for (t of store.targets(); track i; let i = $index) {
+                <div>
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <span class="w-2.5 h-2.5 rounded-full" [style.background]="'hsl(' + (i * 47 % 360) + ', 60%, 50%)'"></span>
+                      <span class="text-sm">{{ getAssetClassLabel(t.assetClass) }}</span>
+                      @if (isFreeAllocation() && t.optionalTickerDescription) {
+                        <span class="text-xs text-slate-400">({{ t.optionalTickerDescription }})</span>
+                      }
+                    </div>
+                    <span class="text-sm font-bold text-spectre-accent">{{ t.allocationPercentage }}%</span>
+                  </div>
+                  @if (!isFreeAllocation() && t.subTargets && t.subTargets.length > 0) {
+                    <div class="ml-5 mt-1 space-y-0.5">
+                      @for (st of t.subTargets; track k; let k = $index) {
+                        <div class="flex items-center justify-between text-xs">
+                          <span class="text-slate-400">{{ st.optionalTickerDescription }}</span>
+                          <span class="text-slate-300">{{ st.allocationPercentage }}% ({{ ((t.allocationPercentage / 100) * st.allocationPercentage).toFixed(1) }}% real)</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (!isFreeAllocation() && effectivePreview().length > 0) {
+              <div class="border-t border-slate-700 mt-3 pt-3">
+                <h5 class="text-xs font-medium text-slate-400 mb-2">Alocação Efetiva (calculada)</h5>
+                <div class="space-y-1">
+                  @for (item of effectivePreview(); track item.label) {
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-slate-400">{{ item.label }}</span>
+                      <span class="text-white font-medium">{{ item.pct.toFixed(1) }}%</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="border-t border-slate-700 mt-3 pt-3 flex items-center gap-2 text-sm">
+              <span class="font-medium text-slate-300">Total:</span>
+              <span class="text-white font-bold">{{ store.totalPercentage().toFixed(1) }}%</span>
+              @if (store.percentageError() === null) {
+                <span class="text-green-400">&checkmark;</span>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-between pt-4 border-t border-slate-700 mt-6">
+          <button (click)="prevStep()" class="text-slate-400 px-4 py-2 rounded hover:text-white text-sm">Voltar</button>
+          <button
+            (click)="nextStep()"
+            [disabled]="saving()"
+            class="bg-spectre-accent text-white px-6 py-2 rounded font-medium hover:opacity-90 disabled:opacity-50"
+          >
+            {{ saving() ? 'Salvando...' : 'Finalizar e Salvar' }}
+          </button>
+        </div>
+      }
+    }
+  </div>
+</div>

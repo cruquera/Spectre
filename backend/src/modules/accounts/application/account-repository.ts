@@ -1,6 +1,6 @@
 import type { Account } from '../domain/account.js';
 
-export interface AccountRepository {
+export type AccountRepository = {
   findAll(): Promise<Account[]>;
   findById(id: string): Promise<Account | null>;
   create(data: Omit<Account, 'id'>): Promise<Account>;

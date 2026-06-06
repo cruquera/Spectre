@@ -1,34 +1,81 @@
 <div class="flex items-center justify-between mb-6">
   <h2 class="text-2xl font-bold">Contas</h2>
-  <a
-    routerLink="/tour"
-    class="bg-spectre-accent text-white px-4 py-2 rounded text-sm font-medium hover:opacity-90"
-  >
-    Nova Conta
-  </a>
 </div>
 
 @if (loading()) {
   <p class="text-slate-400">Carregando...</p>
-} @else if (accounts().length === 0) {
-  <div class="bg-spectre-surface rounded border border-slate-700 p-8 text-center">
-    <p class="text-slate-400 mb-4">Nenhuma conta cadastrada.</p>
-    <a
-      routerLink="/tour"
-      class="text-spectre-accent hover:underline"
-    >
-      Adicionar primeira conta
-    </a>
-  </div>
 } @else {
-  <div class="grid gap-3">
-    @for (acct of accounts(); track acct.id) {
-      <div class="bg-spectre-surface rounded border border-slate-700 p-4 flex items-center justify-between">
-        <div>
-          <h3 class="font-medium">{{ acct.nickname }}</h3>
-          <p class="text-sm text-slate-400">{{ acct.institutionName }} · {{ acct.currency }}</p>
-        </div>
+  <div class="bg-spectre-surface rounded border border-slate-700 p-5 mb-6">
+    <h3 class="text-sm font-medium text-slate-400 mb-3">Nova Conta</h3>
+    <div class="grid grid-cols-4 gap-3 mb-3">
+      <div>
+        <label class="block text-sm font-medium mb-1">Instituição</label>
+        <select
+          [(ngModel)]="institutionName"
+          class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+        >
+          <option value="" disabled>Selecione</option>
+          @for (inst of institutions; track inst) {
+            <option [value]="inst">{{ inst }}</option>
+          }
+        </select>
       </div>
-    }
+      <div>
+        <label class="block text-sm font-medium mb-1">Nome / Apelido</label>
+        <input
+          [(ngModel)]="nickname"
+          class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+          placeholder="Ex: Minha Conta"
+          type="text"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Moeda</label>
+        <select
+          [(ngModel)]="currency"
+          class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
+        >
+          <option value="BRL">BRL (Real)</option>
+          <option value="USD">USD (Dólar)</option>
+          <option value="EUR">EUR (Euro)</option>
+          <option value="GBP">GBP (Libra)</option>
+        </select>
+      </div>
+      <div class="flex items-end">
+        <button
+          (click)="addAccount()"
+          [disabled]="creating() || !institutionName || !nickname"
+          class="bg-spectre-accent text-white px-4 py-2 rounded text-sm font-medium hover:opacity-90 disabled:opacity-50"
+        >
+          {{ creating() ? 'Adicionando...' : 'Adicionar' }}
+        </button>
+      </div>
+    </div>
   </div>
+
+  @if (accounts().length === 0) {
+    <div class="bg-spectre-surface rounded border border-slate-700 p-8 text-center">
+      <p class="text-slate-400">Nenhuma conta cadastrada.</p>
+    </div>
+  } @else {
+    <div class="grid gap-3">
+      <div class="text-sm text-slate-400 mb-1">{{ accounts().length }} conta(s) cadastrada(s)</div>
+      @for (acct of accounts(); track acct.id) {
+        <div class="bg-spectre-surface rounded border border-slate-700 p-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-spectre-accent/20 flex items-center justify-center text-xs font-bold text-spectre-accent">
+              {{ acct.nickname.charAt(0).toUpperCase() }}
+            </div>
+            <div>
+              <h3 class="font-medium">{{ acct.nickname }}</h3>
+              <p class="text-xs text-slate-400">{{ acct.institutionName }} &middot; {{ acct.currency }}</p>
+            </div>
+          </div>
+          <button (click)="removeAccount(acct.id)" class="text-red-400 hover:text-red-300 text-xs">
+            Remover
+          </button>
+        </div>
+      }
+    </div>
+  }
 }

@@ -24,15 +24,15 @@ export class IpcService {
     return this.api.identity;
   }
 
-  public get tour(): Window['spectre']['tour'] {
-    return this.api.tour;
+  public get onboarding(): Window['spectre']['onboarding'] {
+    return this.api.onboarding;
   }
 
   public get accounts(): Window['spectre']['accounts'] {
     return this.api.accounts;
   }
 
-  public get portfolioProjects(): Window['spectre']['portfolioProjects'] {
-    return this.api.portfolioProjects;
+  public get portfolioTemplates(): Window['spectre']['portfolioTemplates'] {
+    return this.api.portfolioTemplates;
   }
 }

@@ -8,8 +8,6 @@
   "include": ["src/**/*.d.ts", "src/**/*.ts"],
   "exclude": [
     "src/**/*.spec.ts",
-    "src/test.ts",
-    "src/app/features/_archive",
-    "src/app/features/auth/_archive"
+    "src/test.ts"
   ]
 }
