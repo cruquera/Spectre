@@ -8,320 +8,72 @@ datasource db {
   url      = "file:./user.db"
 }
 
+enum AssetType {
+  STOCKPICKING
+  CRYPTO
+  DEBENTURE
+  INVESTMENT_FUND
+  PENSION_FUND
+  FII
+  ETF
+  BDR
+  TREASURY
+}
+
 model UserProfile {
-  id        String   @id @default(cuid())
-  displayName String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Institution {
-  id        String          @id @default(cuid())
-  name      String
-  type      InstitutionType
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
-  accounts  Account[]
-  brokerageNotes BrokerageNote[]
-}
-
-enum InstitutionType {
-  BANK
-  BROKER
+  id              String        @id @default(cuid())
+  displayName     String
+  tourCompleted   Boolean       @default(false)
+  tourCurrentStep Int           @default(0)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  accounts        Account[]
+  projects        PortfolioProject[]
 }
 
 model Account {
+  id              String      @id @default(cuid())
+  institutionName String
+  nickname        String
+  currency        String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  userProfileId   String
+  userProfile     UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  realAllocations RealPortfolioAsset[]
+}
+
+model PortfolioProject {
   id            String      @id @default(cuid())
-  institutionId String
-  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
   name          String
-  currency      String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  positions     Position[]
-  transactions  Transaction[]
-  portfolioAccounts PortfolioAccount[]
+  userProfileId String
+  userProfile   UserProfile @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  assets        Asset[]
+  realPortfolio RealPortfolioAsset[]
 }
 
 model Asset {
-  id          String       @id @default(cuid())
-  symbol      String
-  name        String
-  assetType   String
-  category    AssetCategory
-  currency    String
-  metadata    String       @default("{}")
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  identifiers AssetIdentifier[]
-  targets     AssetTargetAllocation[]
-  positions   Position[]
-  transactions Transaction[]
-  blockAssets BlockAsset[]
-  quotes      Quote[]
-  contributionSuggestions ContributionSuggestion[]
+  id                String           @id @default(cuid())
+  type              AssetType
+  targetPercentage  Float
+  initialValue      Float            @default(0)
+  name              String?
+  portfolioProjectId String
+  portfolioProject  PortfolioProject @relation(fields: [portfolioProjectId], references: [id], onDelete: Cascade)
+  realAllocations   RealPortfolioAsset[]
 }
 
-enum AssetCategory {
-  CRYPTO
-  FIXED_INCOME
-  VARIABLE_INCOME
-  REAL_ESTATE
-}
-
-model AssetIdentifier {
-  id       String @id @default(cuid())
-  assetId  String
-  asset    Asset  @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  type     String
-  value    String
-}
-
-model Portfolio {
-  id            String   @id @default(cuid())
-  name          String
-  baseCurrency  String   @default("BRL")
-  strategyId    String?
-  strategy      Strategy? @relation(fields: [strategyId], references: [id])
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  accounts      PortfolioAccount[]
-  categoryAllocations CategoryAllocation[]
-  assetTargets  AssetTargetAllocation[]
-  contributionPlans ContributionPlan[]
-  patrimonySnapshots PatrimonySnapshot[]
-  rebalanceAnalyses RebalanceAnalysis[]
-  strategyConfigs StrategyConfig[]
-}
-
-model PortfolioAccount {
-  portfolioId String
-  accountId   String
-  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  account     Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  @@id([portfolioId, accountId])
-}
-
-model CategoryAllocation {
-  id             String        @id @default(cuid())
-  portfolioId    String
-  portfolio      Portfolio     @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  category       AssetCategory
-  targetPercent  Float
-  @@unique([portfolioId, category])
-}
-
-model AssetTargetAllocation {
-  id            String    @id @default(cuid())
-  portfolioId   String
-  portfolio     Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  assetId       String
-  asset         Asset     @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  targetPercent Float
-  @@unique([portfolioId, assetId])
-}
-
-model Position {
-  id           String   @id @default(cuid())
-  accountId    String
-  account      Account  @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  assetId      String
-  asset        Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  quantity     Float
-  averageCost  Float
-  costCurrency String
-  updatedAt    DateTime @updatedAt
-  @@unique([accountId, assetId])
-}
-
-model Transaction {
-  id             String          @id @default(cuid())
-  accountId      String
-  account        Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
-  assetId        String
-  asset          Asset           @relation(fields: [assetId], references: [id])
-  type           TransactionType
-  quantity       Float
-  unitPrice      Float
-  fees           Float           @default(0)
-  taxes          Float           @default(0)
-  tradeDate      DateTime
-  settlementDate DateTime?
-  currency       String
-  fxRate         Float?
-  createdAt      DateTime        @default(now())
-  lots           TransactionLot[]
-  noteOperations BrokerageNoteOperation[]
-}
-
-enum TransactionType {
-  BUY
-  SELL
-  DIVIDEND
-  INTEREST
-  TRANSFER_IN
-  TRANSFER_OUT
-}
-
-model TransactionLot {
-  id            String      @id @default(cuid())
-  transactionId String
-  transaction   Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
-  quantity      Float
-  remainingQty  Float
-  costBasis     Float
-  acquiredAt    DateTime
-}
-
-model InvestmentBlock {
-  id        String   @id @default(cuid())
-  name      String
-  createdAt DateTime @default(now())
-  assets    BlockAsset[]
-  schedules MonthlyBlockSchedule[]
-}
-
-model BlockAsset {
-  id       String          @id @default(cuid())
-  blockId  String
-  block    InvestmentBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
-  assetId  String
-  asset    Asset           @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  priority Int?
-  @@unique([blockId, assetId])
-}
-
-model MonthlyBlockSchedule {
-  id      String          @id @default(cuid())
-  year    Int
-  month   Int
-  blockId String
-  block   InvestmentBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
-  @@unique([year, month])
-}
-
-model ContributionPlan {
-  id          String   @id @default(cuid())
-  portfolioId String
-  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  amount      Float
-  currency    String
-  plannedDate DateTime
-  status      String   @default("DRAFT")
-  createdAt   DateTime @default(now())
-  suggestions ContributionSuggestion[]
-}
-
-model ContributionSuggestion {
-  id        String           @id @default(cuid())
-  planId    String
-  plan      ContributionPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-  assetId   String
-  asset     Asset            @relation(fields: [assetId], references: [id])
-  suggestedAmount Float
-  rationale String           @default("{}")
-}
-
-model Strategy {
-  id        String   @id @default(cuid())
-  key       String   @unique
-  name      String
-  version   String   @default("1.0.0")
-  isActive  Boolean  @default(true)
-  portfolios Portfolio[]
-  configs   StrategyConfig[]
-}
-
-model StrategyConfig {
-  id          String   @id @default(cuid())
-  strategyId  String
-  strategy    Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
-  portfolioId String
-  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  parameters  String   @default("{}")
-  @@unique([strategyId, portfolioId])
-}
-
-model Quote {
-  id       String      @id @default(cuid())
-  assetId  String
-  asset    Asset       @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  price    Float
-  currency String
-  asOf     DateTime
-  source   QuoteSource
-  @@index([assetId, asOf])
-}
-
-enum QuoteSource {
-  MANUAL
-  IMPORT
-  BENCHMARK
-}
-
-model ExchangeRate {
-  id     String      @id @default(cuid())
-  fromCurrency String
-  toCurrency   String
-  rate   Float
-  asOf   DateTime
-  source QuoteSource
-  @@index([fromCurrency, toCurrency, asOf])
-}
-
-model BrokerageNote {
-  id           String   @id @default(cuid())
-  hashSha256   String
-  relativePath String
-  brokerId     String
-  broker       Institution @relation(fields: [brokerId], references: [id])
-  noteDate     DateTime
-  parsedStatus String   @default("MANUAL")
-  createdAt    DateTime @default(now())
-  operations   BrokerageNoteOperation[]
-}
-
-model BrokerageNoteOperation {
-  id            String        @id @default(cuid())
-  noteId        String
-  note          BrokerageNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  transactionId String?
-  transaction   Transaction?  @relation(fields: [transactionId], references: [id])
-  description   String?
-}
-
-model FinancialDocument {
-  id           String   @id @default(cuid())
-  hashSha256   String
-  relativePath String
-  documentType String
-  documentDate DateTime
-  createdAt    DateTime @default(now())
-}
-
-model PatrimonySnapshot {
-  id          String   @id @default(cuid())
-  portfolioId String
-  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  totalValue  Float
-  currency    String
-  breakdown   String   @default("{}")
-  capturedAt  DateTime @default(now())
-}
-
-model RebalanceAnalysis {
-  id               String   @id @default(cuid())
-  portfolioId      String
-  portfolio        Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  thresholdPercent Float
-  results          String   @default("{}")
-  calculatedAt     DateTime @default(now())
-}
-
-model TaxReport {
-  id        String   @id @default(cuid())
-  year      Int
-  reportType String
-  data      String   @default("{}")
-  createdAt DateTime @default(now())
+model RealPortfolioAsset {
+  id                String           @id @default(cuid())
+  actualValue       Float
+  assetId           String
+  asset             Asset            @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  accountId         String
+  account           Account          @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  projectId         String
+  project           PortfolioProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 }

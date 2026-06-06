@@ -9,7 +9,6 @@ import {
   getUserSaltPath,
 } from '../../../shared/database/paths.js';
 import { createEncryptedUserClient } from '../../../shared/database/prisma-factory.js';
-import { seedDefaultStrategies } from '../../../shared/database/seed-defaults.js';
 import { AppError, type Result, err, ok } from '../../../shared/kernel/result.js';
 import type { ProfileRegistryEntry } from '../domain/profile.js';
 import { CryptoService } from '../infrastructure/crypto-service.js';
@@ -64,7 +63,6 @@ export class IdentityService {
       await client.userProfile.create({
         data: { displayName },
       });
-      await seedDefaultStrategies(client);
       await client.$disconnect();
 
       return ok({ username: entry.username });
@@ -108,7 +106,6 @@ export class IdentityService {
       const client = createEncryptedUserClient(dbPath, dbKey);
 
       await client.$connect();
-      await seedDefaultStrategies(client);
 
       try {
         const prev = this.ctx.getUserClient();

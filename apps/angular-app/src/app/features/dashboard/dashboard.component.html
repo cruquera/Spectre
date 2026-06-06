@@ -1,8 +1,47 @@
-<h2 class="text-2xl font-bold mb-4">Dashboard</h2>
-<p class="text-slate-400 mb-4">Bem-vindo, {{ session?.displayName }}.</p>
-@if (health()) {
-  <div class="bg-spectre-surface p-4 rounded border border-slate-700 text-sm">
-    <p>Status: {{ health()?.status }}</p>
-    <p>Versão: {{ health()?.version }}</p>
+@if (!tourCompleted()) {
+  <div class="animate-pulse max-w-lg mx-auto mt-16">
+    <div class="bg-spectre-surface rounded border border-slate-700 p-8 text-center">
+      <div class="h-6 bg-slate-700 rounded w-48 mx-auto mb-4"></div>
+      <div class="h-4 bg-slate-700 rounded w-64 mx-auto mb-6"></div>
+      <div class="h-12 bg-slate-700 rounded w-48 mx-auto"></div>
+    </div>
   </div>
-}
+
+  <div class="bg-spectre-surface p-8 rounded border border-slate-700 text-center max-w-lg mx-auto mt-8">
+    <h3 class="text-xl font-semibold mb-2">Bem-vindo ao Spectre</h3>
+    <p class="text-slate-400 mb-6">
+      Sua jornada de investimentos começa aqui. Vamos configurar suas contas e projetos em poucos passos.
+    </p>
+    <a
+      routerLink="/tour"
+      class="inline-block bg-spectre-accent text-white px-6 py-3 rounded font-medium hover:opacity-90"
+    >
+      Iniciar Jornada de Cadastro
+    </a>
+  </div>
+} @else {
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold mb-1">Dashboard</h2>
+    <p class="text-slate-400">Bem-vindo, {{ session?.displayName }}.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-spectre-surface p-5 rounded border border-slate-700">
+      <h4 class="text-sm text-slate-400 mb-1">Contas</h4>
+      <p class="text-3xl font-bold">{{ accountCount() }}</p>
+    </div>
+    <div class="bg-spectre-surface p-5 rounded border border-slate-700">
+      <h4 class="text-sm text-slate-400 mb-1">Projetos</h4>
+      <p class="text-3xl font-bold">0</p>
+    </div>
+    <div class="bg-spectre-surface p-5 rounded border border-slate-700">
+      <h4 class="text-sm text-slate-400 mb-1">Patrimônio</h4>
+      <p class="text-3xl font-bold">R$ 0,00</p>
+    </div>
+  </div>
+
+  <div class="bg-spectre-surface rounded border border-slate-700 p-6">
+    <h3 class="text-sm font-medium text-slate-400 mb-2">Distribuição de Carteiras</h3>
+    <p class="text-sm text-slate-500">Crie seu primeiro projeto de carteira para ver gráficos e comparativos aqui.</p>
+  </div>
+}

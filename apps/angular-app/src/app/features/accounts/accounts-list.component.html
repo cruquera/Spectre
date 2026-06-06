@@ -1,0 +1,34 @@
+<div class="flex items-center justify-between mb-6">
+  <h2 class="text-2xl font-bold">Contas</h2>
+  <a
+    routerLink="/tour"
+    class="bg-spectre-accent text-white px-4 py-2 rounded text-sm font-medium hover:opacity-90"
+  >
+    Nova Conta
+  </a>
+</div>
+
+@if (loading()) {
+  <p class="text-slate-400">Carregando...</p>
+} @else if (accounts().length === 0) {
+  <div class="bg-spectre-surface rounded border border-slate-700 p-8 text-center">
+    <p class="text-slate-400 mb-4">Nenhuma conta cadastrada.</p>
+    <a
+      routerLink="/tour"
+      class="text-spectre-accent hover:underline"
+    >
+      Adicionar primeira conta
+    </a>
+  </div>
+} @else {
+  <div class="grid gap-3">
+    @for (acct of accounts(); track acct.id) {
+      <div class="bg-spectre-surface rounded border border-slate-700 p-4 flex items-center justify-between">
+        <div>
+          <h3 class="font-medium">{{ acct.nickname }}</h3>
+          <p class="text-sm text-slate-400">{{ acct.institutionName }} · {{ acct.currency }}</p>
+        </div>
+      </div>
+    }
+  </div>
+}

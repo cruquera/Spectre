@@ -6,6 +6,34 @@ import Database from 'better-sqlite3';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+const OLD_TABLES = [
+  'Account',
+  'Institution',
+  'AssetIdentifier',
+  'Asset',
+  'PortfolioAccount',
+  'Portfolio',
+  'CategoryAllocation',
+  'AssetTargetAllocation',
+  'Position',
+  'TransactionLot',
+  'Transaction',
+  'InvestmentBlock',
+  'BlockAsset',
+  'MonthlyBlockSchedule',
+  'ContributionSuggestion',
+  'ContributionPlan',
+  'StrategyConfig',
+  'Quote',
+  'ExchangeRate',
+  'BrokerageNoteOperation',
+  'BrokerageNote',
+  'FinancialDocument',
+  'PatrimonySnapshot',
+  'RebalanceAnalysis',
+  'TaxReport',
+];
+
 function loadSql(filename: string): string {
   const candidates = [
     path.join(__dirname, 'sql', filename),
@@ -31,12 +59,41 @@ function tableExists(db: Database.Database, table: string): boolean {
   return !!row;
 }
 
+function columnExists(db: Database.Database, table: string, column: string): boolean {
+  const columns = db.pragma(`table_info("${table}")`) as Array<{ name: string }>;
+
+  return columns.some((c) => c.name === column);
+}
+
+function dropOldTables(db: Database.Database): void {
+  for (const table of OLD_TABLES) {
+    db.exec(`DROP TABLE IF EXISTS "${table}"`);
+  }
+  db.exec(`DROP TABLE IF EXISTS "UserProfile"`);
+}
+
 export function runUserMigrations(dbPath: string): void {
   const db = new Database(dbPath);
 
   try {
-    if (tableExists(db, 'UserProfile')) return;
-    db.exec(loadSql('user-init.sql'));
+    if (!tableExists(db, 'UserProfile')) {
+      db.exec(loadSql('user-init.sql'));
+
+      return;
+    }
+
+    if (!columnExists(db, 'UserProfile', 'tourCompleted')) {
+      dropOldTables(db);
+      db.exec(loadSql('user-init.sql'));
+
+      return;
+    }
+
+    if (!tableExists(db, 'Account')) {
+      db.exec(loadSql('user-migration-001.sql'));
+    } else if (!tableExists(db, 'PortfolioProject')) {
+      db.exec(loadSql('user-migration-002.sql'));
+    }
   } finally {
     db.close();
   }

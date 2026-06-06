@@ -1,6 +1,7 @@
 export type Account = {
   id: string;
-  institutionId: string;
-  name: string;
+  institutionName: string;
+  nickname: string;
   currency: string;
-};
+  userProfileId: string;
+}

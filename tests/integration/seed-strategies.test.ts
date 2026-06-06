@@ -1,7 +1,7 @@
-import { seedDefaultStrategies } from '../../backend/src/shared/database/seed-defaults.js';
+import { seedDefaults } from '../../backend/src/shared/database/seed-defaults.js';
 
-describe('seedDefaultStrategies', () => {
+describe('seedDefaults', () => {
   it('is a function', () => {
-    expect(typeof seedDefaultStrategies).toBe('function');
+    expect(typeof seedDefaults).toBe('function');
   });
 });

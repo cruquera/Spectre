@@ -31,14 +31,21 @@ export class LoginComponent implements OnInit {
       username: this.username(),
     });
 
-    if (res.success && res.data) {
+    if (res.success) {
       this.ipc.session.set({
-        displayName: (res.data).displayName,
+        displayName: res.data.displayName,
         username: this.username(),
       });
-      await this.router.navigate(['/dashboard']);
+
+      const tourRes = await this.ipc.tour.getState();
+
+      if (tourRes.success && tourRes.data.completed) {
+        await this.router.navigate(['/dashboard']);
+      } else {
+        await this.router.navigate(['/tour']);
+      }
     } else {
-      this.error.set(res.error?.message ?? 'Falha no login');
+      this.error.set(res.error.message ?? 'Falha no login');
     }
   }
 }

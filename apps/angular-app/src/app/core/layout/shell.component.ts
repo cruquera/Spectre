@@ -1,5 +1,5 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
 import { IpcService } from '../services/ipc.service';
 
@@ -9,29 +9,34 @@ import { IpcService } from '../services/ipc.service';
   standalone: true,
   templateUrl: './shell.component.html',
 })
-export class ShellComponent {
+export class ShellComponent implements OnInit {
   public get session(): { displayName: string; username: string } | null { return this.ipc.session(); }
+  public readonly tourCompleted = signal(false);
+
   public readonly nav = [
     { label: 'Dashboard', path: '/dashboard' },
-    { label: 'Institui????es', path: '/institutions' },
     { label: 'Contas', path: '/accounts' },
-    { label: 'Ativos', path: '/assets' },
-    { label: 'Carteira', path: '/portfolio' },
-    { label: 'Blocos', path: '/investment-blocks' },
-    { label: 'Aloca????o', path: '/allocation' },
-    { label: 'Aportes', path: '/contributions' },
-    { label: 'Rebalanceamento', path: '/rebalancing' },
-    { label: 'Notas', path: '/brokerage-notes' },
-    { label: 'Patrim??nio', path: '/patrimony' },
-    { label: 'Analytics', path: '/analytics' },
-    { label: 'Configura????es', path: '/settings' },
+    { label: 'Projetos', path: '/projects' },
   ];
 
   private readonly ipc = inject(IpcService);
+  private readonly router = inject(Router);
+
+  public async ngOnInit(): Promise<void> {
+    const res = await this.ipc.tour.getState();
+
+    if (res.success) {
+      this.tourCompleted.set(res.data.completed);
+
+      if (!res.data.completed) {
+        await this.router.navigate(['/tour']);
+      }
+    }
+  }
 
   public async logout(): Promise<void> {
     await this.ipc.identity.logout();
     this.ipc.session.set(null);
-    location.href = '/auth';
+    window.location.href = '/auth';
   }
 }

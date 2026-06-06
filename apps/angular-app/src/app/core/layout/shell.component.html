@@ -1,27 +1,32 @@
 <div class="flex h-screen">
   <aside class="w-56 bg-spectre-surface border-r border-slate-700 p-4 flex flex-col">
-    <h1 class="text-xl font-bold text-spectre-accent mb-6">Spectre</h1>
+    <div class="mb-6">
+      <h1 class="text-xl font-bold text-spectre-accent">Spectre</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Gestão de Investimentos</p>
+    </div>
+
     <nav class="flex flex-col gap-1 text-sm flex-1">
       @for (item of nav; track item.path) {
         <a
           [routerLink]="item.path"
           routerLinkActive="bg-slate-700 text-white"
-          class="px-3 py-2 rounded hover:bg-slate-800 text-slate-300"
+          class="px-3 py-2 rounded hover:bg-slate-800 text-slate-300 transition-colors"
           >{{ item.label }}</a
         >
       }
     </nav>
-    <div class="text-xs text-slate-500 mt-4">
-      {{ session?.displayName }}
+
+    <div class="border-t border-slate-700 pt-3 mt-3">
+      <div class="text-xs text-slate-400 mb-2">{{ session?.displayName }}</div>
+      <button
+        class="w-full text-left text-sm text-red-400 hover:text-red-300 transition-colors"
+        (click)="logout()"
+      >
+        Sair
+      </button>
     </div>
-    <button
-      class="mt-2 text-sm text-red-400 hover:underline"
-      (click)="logout()"
-    >
-      Sair
-    </button>
   </aside>
-  <main class="flex-1 overflow-auto p-6">
+  <main class="flex-1 overflow-auto p-6 bg-slate-900">
     <router-outlet />
   </main>
-</div>
+</div>

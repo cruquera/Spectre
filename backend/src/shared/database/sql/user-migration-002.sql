@@ -1,24 +1,4 @@
-CREATE TABLE "UserProfile" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "displayName" TEXT NOT NULL,
-    "tourCompleted" BOOLEAN NOT NULL DEFAULT false,
-    "tourCurrentStep" INTEGER NOT NULL DEFAULT 0,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
-);
-
-CREATE TABLE "Account" (
-    "id" TEXT NOT NULL PRIMARY KEY,
-    "institutionName" TEXT NOT NULL,
-    "nickname" TEXT NOT NULL,
-    "currency" TEXT NOT NULL,
-    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL,
-    "userProfileId" TEXT NOT NULL,
-    CONSTRAINT "Account_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE
-);
-
-CREATE TABLE "PortfolioProject" (
+CREATE TABLE IF NOT EXISTS "PortfolioProject" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -27,7 +7,7 @@ CREATE TABLE "PortfolioProject" (
     CONSTRAINT "PortfolioProject_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "Asset" (
+CREATE TABLE IF NOT EXISTS "Asset" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "type" TEXT NOT NULL CHECK("type" IN ('STOCKPICKING','CRYPTO','DEBENTURE','INVESTMENT_FUND','PENSION_FUND','FII','ETF','BDR','TREASURY')),
     "targetPercentage" REAL NOT NULL,
@@ -37,7 +17,7 @@ CREATE TABLE "Asset" (
     CONSTRAINT "Asset_portfolioProjectId_fkey" FOREIGN KEY ("portfolioProjectId") REFERENCES "PortfolioProject" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
-CREATE TABLE "RealPortfolioAsset" (
+CREATE TABLE IF NOT EXISTS "RealPortfolioAsset" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "actualValue" REAL NOT NULL,
     "assetId" TEXT NOT NULL,

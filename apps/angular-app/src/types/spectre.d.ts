@@ -1,52 +1,51 @@
-export interface IpcResult<T> {
-  success: boolean;
-  data?: T;
-  error?: { code: string; message: string };
+export type IpcResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: { code: string; message: string } };
+
+export interface AssetDto {
+  id: string;
+  type: string;
+  targetPercentage: number;
+  initialValue: number;
+  name: string | null;
+  portfolioProjectId: string;
+}
+
+export interface PortfolioProjectDto {
+  id: string;
+  name: string;
+  assets: AssetDto[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface SpectreApi {
   invoke<T>(channel: string, payload?: unknown): Promise<IpcResult<T>>;
-  healthcheck(): Promise<IpcResult<{ status: string; version: string; timestamp: string }>>;
-  initBenchmarkDb(): Promise<IpcResult<void>>;
   identity: {
     listProfiles(): Promise<IpcResult<unknown[]>>;
     createProfile(data: unknown): Promise<IpcResult<unknown>>;
     login(data: unknown): Promise<IpcResult<{ displayName: string }>>;
     logout(): Promise<IpcResult<void>>;
+    session(): Promise<IpcResult<{ displayName: string; username: string }>>;
   };
-  institutions: { list(): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>> };
-  investmentBlocks: { list(): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>>; getById(id: string): Promise<IpcResult<unknown>>; update(data: unknown): Promise<IpcResult<unknown>>; remove(data: unknown): Promise<IpcResult<void>>; setMonthlyBlock(data: unknown): Promise<IpcResult<void>>; getSchedule(year: number): Promise<IpcResult<unknown[]>> };
-  accounts: { list(id?: string): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>> };
-  assets: { list(cat?: string): Promise<IpcResult<unknown[]>>; create(data: unknown): Promise<IpcResult<unknown>> };
-  portfolio: {
-    list(): Promise<IpcResult<unknown[]>>;
-    create(data: unknown): Promise<IpcResult<unknown>>;
-    createTransaction(data: unknown): Promise<IpcResult<unknown>>;
-    listPositions(id?: string): Promise<IpcResult<unknown[]>>;
+  tour: {
+    getState(): Promise<IpcResult<{ completed: boolean; currentStep: number }>>;
+    updateStep(data: { step: number }): Promise<IpcResult<{ completed: boolean; currentStep: number }>>;
+    complete(): Promise<IpcResult<{ completed: boolean; currentStep: number }>>;
+    abort(): Promise<IpcResult<void>>;
   };
-  allocation: {
-    setCategory(data: unknown): Promise<IpcResult<void>>;
-    analyze(id: string, t?: number): Promise<IpcResult<unknown>>;
+  accounts: {
+    list(): Promise<IpcResult<Array<{ id: string; institutionName: string; nickname: string; currency: string }>>>;
+    create(data: { institutionName: string; nickname: string; currency: string }): Promise<IpcResult<{ id: string; institutionName: string; nickname: string; currency: string }>>;
+    update(id: string, data: Partial<{ institutionName: string; nickname: string; currency: string }>): Promise<IpcResult<{ id: string; institutionName: string; nickname: string; currency: string }>>;
+    delete(id: string): Promise<IpcResult<void>>;
   };
-  benchmark: { sync(data: unknown): Promise<IpcResult<unknown>>; listCached(data: unknown): Promise<IpcResult<unknown>> };
-  marketData: { createQuote(data: unknown): Promise<IpcResult<unknown>> };
-  contribution: {
-    createBlock(data: unknown): Promise<IpcResult<unknown>>;
-    setMonthlyBlock(data: unknown): Promise<IpcResult<void>>;
-    simulate(data: unknown): Promise<IpcResult<unknown[]>>;
+  portfolioProjects: {
+    list(): Promise<IpcResult<PortfolioProjectDto[]>>;
+    create(data: { name: string; assets: Array<{ type: string; targetPercentage: number; initialValue: number; name?: string | null }> }): Promise<IpcResult<PortfolioProjectDto>>;
+    update(id: string, data: Partial<{ name: string; assets: Array<{ type: string; targetPercentage: number; initialValue: number; name?: string | null }> }>): Promise<IpcResult<PortfolioProjectDto>>;
+    delete(id: string): Promise<IpcResult<void>>;
   };
-  rebalancing: { analyze(id: string, t?: number): Promise<IpcResult<unknown>> };
-  brokerageNotes: { list(): Promise<IpcResult<unknown[]>>; register(data: unknown): Promise<IpcResult<unknown>> };
-  patrimony: { capture(data: unknown): Promise<IpcResult<unknown>>; list(id: string): Promise<IpcResult<unknown[]>> };
-  tax: { preview(data: unknown): Promise<IpcResult<unknown>> };
-  import: {
-    quotesCsv(data: unknown): Promise<IpcResult<unknown>>;
-    operationsCsv(data: unknown): Promise<IpcResult<unknown>>;
-    syncFx(from: string, to: string, ticker: string): Promise<IpcResult<unknown>>;
-  };
-  documents: { list(): Promise<IpcResult<unknown[]>>; register(data: unknown): Promise<IpcResult<unknown>> };
-  valuation: { getPortfolioValue(portfolioId: string): Promise<IpcResult<unknown>> };
-  analyticsApi: { portfolioEvolution(portfolioId: string): Promise<IpcResult<unknown>> };
 }
 
 declare global {
