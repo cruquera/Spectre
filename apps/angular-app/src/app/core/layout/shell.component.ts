@@ -17,6 +17,7 @@ export class ShellComponent implements OnInit {
     { label: 'Dashboard', path: '/dashboard' },
     { label: 'Contas', path: '/accounts' },
     { label: 'Projetos', path: '/portfolio-templates' },
+    { label: 'Carteiras', path: '/investment-portfolio' },
   ];
 
   private readonly ipc = inject(IpcService);

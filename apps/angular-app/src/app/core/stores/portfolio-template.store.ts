@@ -11,7 +11,6 @@ export type TemplateMeta = {
   name: string;
   description: string;
   strategy: string;
-  benchmark: string;
   baseCurrency: string;
 };
 
@@ -23,7 +22,6 @@ export class PortfolioTemplateStore {
     name: '',
     description: '',
     strategy: '',
-    benchmark: '',
     baseCurrency: 'BRL',
   });
 
@@ -136,17 +134,13 @@ export class PortfolioTemplateStore {
     for (const target of this.targets()) {
       if (target.subTargets && target.subTargets.length > 0) {
         const parentId = crypto.randomUUID();
+        const parentPct = target.allocationPercentage;
 
-        result.push({
-          assetClass: target.assetClass,
-          allocationPercentage: target.allocationPercentage,
-          classTargetId: parentId,
-        });
         for (const sub of target.subTargets) {
           result.push({
             assetClass: sub.assetClass,
             ticker: sub.optionalTickerDescription || undefined,
-            allocationPercentage: sub.allocationPercentage,
+            allocationPercentage: sub.allocationPercentage * parentPct / 100,
             classTargetId: parentId,
           });
         }
@@ -168,7 +162,6 @@ export class PortfolioTemplateStore {
       name: '',
       description: '',
       strategy: '',
-      benchmark: '',
       baseCurrency: 'BRL',
     });
   }

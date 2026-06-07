@@ -4,9 +4,9 @@
     <p class="text-slate-400">Configure sua estrutura de investimentos em poucos passos.</p>
   </div>
 
-  <div class="flex gap-2 mb-8">
-    @for (step of steps; track step.number) {
-      <div class="flex-1 flex items-center gap-2">
+  <div class="flex items-center mb-8">
+    @for (step of steps; track step.number; let last = $last) {
+      <div class="flex items-center gap-2">
         <div
           class="w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium shrink-0"
           [class.bg-spectre-accent]="step.number <= currentStep()"
@@ -17,14 +17,18 @@
           {{ step.number }}
         </div>
         <span
-          class="text-sm"
+          class="text-sm whitespace-nowrap"
           [class.text-white]="step.number <= currentStep()"
           [class.text-slate-500]="step.number > currentStep()"
         >
           {{ step.label }}
         </span>
-        @if (step.number < steps.length) {
-          <div class="flex-1 h-px bg-slate-700 ml-2"></div>
+        @if (!last) {
+          <div
+            class="w-12 h-px"
+            [class.bg-spectre-accent]="step.number < currentStep()"
+            [class.bg-slate-700]="step.number >= currentStep()"
+          ></div>
         }
       </div>
     }
@@ -168,17 +172,6 @@
               />
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">Benchmark</label>
-              <select
-                [(ngModel)]="templateBenchmark"
-                class="w-full bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
-              >
-                @for (b of benchmarks; track b.value) {
-                  <option [value]="b.value">{{ b.label }}</option>
-                }
-              </select>
-            </div>
-            <div>
               <label class="block text-sm font-medium mb-1">Moeda Base</label>
               <select
                 [(ngModel)]="store.meta().baseCurrency"
@@ -237,6 +230,7 @@
               <label class="block text-sm font-medium mb-1">%</label>
               <input
                 [(ngModel)]="targetPercentage"
+                (keydown.enter)="addTarget()"
                 class="w-20 bg-slate-800 border border-slate-600 rounded px-3 py-2 text-white text-sm"
                 placeholder="Ex: 20"
                 type="number"
@@ -304,6 +298,7 @@
                             <label class="block text-xs font-medium mb-1">Ativo</label>
                             <input
                               [(ngModel)]="subTicker"
+                              (keydown.enter)="addSubTarget()"
                               class="w-36 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-white text-xs"
                               placeholder="Ex: Bitcoin" type="text"
                             />
@@ -312,6 +307,7 @@
                             <label class="block text-xs font-medium mb-1">% na classe</label>
                             <input
                               [(ngModel)]="subPercentage"
+                              (keydown.enter)="addSubTarget()"
                               class="w-20 bg-slate-800 border border-slate-600 rounded px-2 py-1.5 text-white text-xs"
                               placeholder="Ex: 80" type="number" min="0" max="100" step="0.1"
                             />
@@ -383,10 +379,6 @@
               <div>
                 <span class="text-slate-400">Estratégia:</span>
                 <span class="text-white ml-2">{{ chosenStrategy() === 'FREE_ALLOCATION' ? 'Livre' : 'Por Classe de Ativo' }}</span>
-              </div>
-              <div>
-                <span class="text-slate-400">Benchmark:</span>
-                <span class="text-white ml-2">{{ getBenchmarkLabel(templateBenchmark) }}</span>
               </div>
               <div>
                 <span class="text-slate-400">Moeda Base:</span>

@@ -28,15 +28,6 @@ const ASSET_CLASSES = [
   { value: 'alternative_assets', label: 'Ativos Alternativos' },
 ] as const;
 
-const BENCHMARKS = [
-  { value: 'SP500', label: 'S&P 500' },
-  { value: 'CDI', label: 'CDI' },
-  { value: 'IPCA', label: 'IPCA' },
-  { value: 'IBOVESPA', label: 'Ibovespa' },
-  { value: 'NASDAQ100', label: 'Nasdaq 100' },
-  { value: 'BITCOIN', label: 'Bitcoin' },
-] as const;
-
 type Account_ = { id: string; institutionName: string; nickname: string; currency: string };
 
 @Component({
@@ -57,7 +48,6 @@ export class OnboardingWizardComponent implements OnInit {
   ] as const;
 
   public readonly assetClasses = ASSET_CLASSES;
-  public readonly benchmarks = BENCHMARKS;
 
   public readonly strategies = [
     {
@@ -85,7 +75,6 @@ export class OnboardingWizardComponent implements OnInit {
 
   public templateName = '';
   public templateDescription = '';
-  public templateBenchmark = 'SP500';
 
   public targetClass = '';
   public targetTicker = '';
@@ -144,10 +133,6 @@ export class OnboardingWizardComponent implements OnInit {
 
   public getAssetClassLabel(value: string): string {
     return ASSET_CLASSES.find((a) => a.value === value)?.label ?? value;
-  }
-
-  public getBenchmarkLabel(value: string): string {
-    return BENCHMARKS.find((b) => b.value === value)?.label ?? value;
   }
 
   public async ngOnInit(): Promise<void> {
@@ -266,7 +251,6 @@ export class OnboardingWizardComponent implements OnInit {
         name: this.templateName,
         description: this.templateDescription,
         strategy: this.chosenStrategy(),
-        benchmark: this.templateBenchmark,
       }));
     }
     if (this.isLastStep) {
@@ -302,7 +286,6 @@ export class OnboardingWizardComponent implements OnInit {
         name: meta.name || 'Minha Carteira',
         description: meta.description || null,
         strategy: this.chosenStrategy(),
-        benchmark: meta.benchmark || null,
         baseCurrency: meta.baseCurrency,
         isDefault: true,
         targets: this.store.flattenTargets().map((f) => ({

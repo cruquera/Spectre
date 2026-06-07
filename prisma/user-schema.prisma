@@ -115,36 +115,61 @@ model PortfolioAssetTarget {
   subTargets               PortfolioAssetTarget[] @relation("ClassTargetHierarchy")
   templateId               String
   template                 PortfolioTemplate     @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  ledgerEvents             LedgerEvent[]
 }
 
 model InvestmentPortfolio {
-  id            String        @id @default(cuid())
+  id            String                @id @default(cuid())
   name          String
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  status        String                @default("ACTIVE")
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
   userProfileId String
-  userProfile   UserProfile   @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
+  userProfile   UserProfile           @relation(fields: [userProfileId], references: [id], onDelete: Cascade)
   templateId    String
-  template      PortfolioTemplate @relation(fields: [templateId], references: [id])
-  ledgerEvents  LedgerEvent[]
+  template      PortfolioTemplate     @relation(fields: [templateId], references: [id])
+  assetValues        PortfolioAssetValue[]
+  allocationSnapshots AllocationSnapshot[]
+  ledgerEvents       LedgerEvent[]
+}
+
+model PortfolioAssetValue {
+  id                       String                @id @default(cuid())
+  assetClass               String
+  optionalTickerDescription String?
+  targetPercentage         Float
+  currentValue             Float                 @default(0)
+  classTargetId            String?
+  portfolioId              String
+  portfolio                InvestmentPortfolio   @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  ledgerEvents             LedgerEvent[]
+}
+
+model AllocationSnapshot {
+  id            String              @id @default(cuid())
+  portfolioId   String
+  portfolio     InvestmentPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  snapshotDate  DateTime
+  totalValue    Float
+  data          String
+  createdAt     DateTime            @default(now())
+  @@unique([portfolioId, snapshotDate])
 }
 
 model LedgerEvent {
-  id            String       @id @default(cuid())
+  id            String              @id @default(cuid())
   eventType     EventType
   grossAmount   Float
-  feesAmount    Float        @default(0)
-  taxAmount     Float        @default(0)
+  feesAmount    Float               @default(0)
+  taxAmount     Float               @default(0)
   netAmount     Float
   currency      String
   occurredAt    DateTime
   notes         String?
-  createdAt     DateTime     @default(now())
+  createdAt     DateTime            @default(now())
   portfolioId   String
-  portfolio     InvestmentPortfolio  @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolio     InvestmentPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   accountId     String
-  account       Account      @relation(fields: [accountId], references: [id])
-  assetTargetId String
-  assetTarget   PortfolioAssetTarget @relation(fields: [assetTargetId], references: [id])
+  account       Account             @relation(fields: [accountId], references: [id])
+  assetValueId  String
+  assetValue    PortfolioAssetValue @relation(fields: [assetValueId], references: [id])
 }

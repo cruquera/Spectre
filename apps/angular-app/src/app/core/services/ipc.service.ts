@@ -35,4 +35,16 @@ export class IpcService {
   public get portfolioTemplates(): Window['spectre']['portfolioTemplates'] {
     return this.api.portfolioTemplates;
   }
+
+  public get investmentPortfolio(): Window['spectre']['investmentPortfolio'] {
+    return this.api.investmentPortfolio;
+  }
+
+  public get ledgerEvents(): Window['spectre']['ledgerEvents'] {
+    return this.api.ledgerEvents;
+  }
+
+  public get analytics(): Window['spectre']['analytics'] {
+    return this.api.analytics;
+  }
 }

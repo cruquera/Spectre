@@ -28,12 +28,24 @@ CREATE TABLE IF NOT EXISTS "PortfolioAssetTarget" (
 CREATE TABLE IF NOT EXISTS "InvestmentPortfolio" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "name" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
     "userProfileId" TEXT NOT NULL,
     "templateId" TEXT NOT NULL,
     CONSTRAINT "InvestmentPortfolio_userProfileId_fkey" FOREIGN KEY ("userProfileId") REFERENCES "UserProfile" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "InvestmentPortfolio_templateId_fkey" FOREIGN KEY ("templateId") REFERENCES "PortfolioTemplate" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS "PortfolioAssetValue" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "assetClass" TEXT NOT NULL,
+    "optionalTickerDescription" TEXT,
+    "targetPercentage" REAL NOT NULL,
+    "currentValue" REAL NOT NULL DEFAULT 0,
+    "classTargetId" TEXT,
+    "portfolioId" TEXT NOT NULL,
+    CONSTRAINT "PortfolioAssetValue_portfolioId_fkey" FOREIGN KEY ("portfolioId") REFERENCES "InvestmentPortfolio" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS "LedgerEvent" (
@@ -49,8 +61,8 @@ CREATE TABLE IF NOT EXISTS "LedgerEvent" (
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "portfolioId" TEXT NOT NULL,
     "accountId" TEXT NOT NULL,
-    "assetTargetId" TEXT NOT NULL,
+    "assetValueId" TEXT NOT NULL,
     CONSTRAINT "LedgerEvent_portfolioId_fkey" FOREIGN KEY ("portfolioId") REFERENCES "InvestmentPortfolio" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "LedgerEvent_accountId_fkey" FOREIGN KEY ("accountId") REFERENCES "Account" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "LedgerEvent_assetTargetId_fkey" FOREIGN KEY ("assetTargetId") REFERENCES "PortfolioAssetTarget" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    CONSTRAINT "LedgerEvent_assetValueId_fkey" FOREIGN KEY ("assetValueId") REFERENCES "PortfolioAssetValue" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );

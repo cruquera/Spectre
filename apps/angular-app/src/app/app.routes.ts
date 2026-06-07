@@ -38,6 +38,12 @@ export const routes: Routes = [
       {
         canActivate: [onboardingGuard],
         loadComponent: () =>
+          import('./features/investment-portfolio/portfolio-list.component').then((m) => m.PortfolioListComponent),
+        path: 'investment-portfolio',
+      },
+      {
+        canActivate: [onboardingGuard],
+        loadComponent: () =>
           import('./features/investment-portfolio/investment-portfolio.component').then((m) => m.InvestmentPortfolioComponent),
         path: 'investment-portfolio/:templateId',
       },

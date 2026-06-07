@@ -115,6 +115,14 @@ export function runUserMigrations(dbPath: string): void {
     if (tableExists(db, 'PortfolioAssetTarget') && !columnExists(db, 'PortfolioAssetTarget', 'classTargetId')) {
       db.exec(`ALTER TABLE "PortfolioAssetTarget" ADD COLUMN "classTargetId" TEXT`);
     }
+
+    if (!tableExists(db, 'PortfolioAssetValue')) {
+      db.exec(loadSql('user-migration-003.sql'));
+    }
+
+    if (!tableExists(db, 'AllocationSnapshot')) {
+      db.exec(loadSql('user-migration-004.sql'));
+    }
   } finally {
     db.close();
   }

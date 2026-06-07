@@ -25,23 +25,153 @@
     <p class="text-slate-400">Bem-vindo, {{ session?.displayName }}.</p>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
     <div class="bg-spectre-surface p-5 rounded border border-slate-700">
       <h4 class="text-sm text-slate-400 mb-1">Contas</h4>
       <p class="text-3xl font-bold">{{ accountCount() }}</p>
     </div>
     <div class="bg-spectre-surface p-5 rounded border border-slate-700">
       <h4 class="text-sm text-slate-400 mb-1">Projetos</h4>
-      <p class="text-3xl font-bold">0</p>
+      <p class="text-3xl font-bold">{{ templateCount() }}</p>
+    </div>
+    <div class="bg-spectre-surface p-5 rounded border border-slate-700">
+      <h4 class="text-sm text-slate-400 mb-1">Carteiras</h4>
+      <p class="text-3xl font-bold">{{ summary()?.portfolioCount ?? 0 }}</p>
     </div>
     <div class="bg-spectre-surface p-5 rounded border border-slate-700">
       <h4 class="text-sm text-slate-400 mb-1">Patrimônio</h4>
-      <p class="text-3xl font-bold">R$ 0,00</p>
+      <p class="text-3xl font-bold">{{ summary() ? currencyFormatter.format(summary()!.totalInvested) : 'R$ 0,00' }}</p>
     </div>
   </div>
 
-  <div class="bg-spectre-surface rounded border border-slate-700 p-6">
-    <h3 class="text-sm font-medium text-slate-400 mb-2">Distribuição de Carteiras</h3>
-    <p class="text-sm text-slate-500">Crie seu primeiro projeto de carteira para ver gráficos e comparativos aqui.</p>
-  </div>
+  @if (summary() && summary()!.deviations.length > 0) {
+    <div class="bg-spectre-surface rounded border border-slate-700 p-6 mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-medium text-slate-400">Desvios de Alocação</h3>
+        @if (needsAttention().length > 0) {
+          <span class="text-xs text-yellow-400">{{ needsAttention().length }} precisam de atenção</span>
+        }
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-slate-500 text-xs uppercase text-left">
+              <th class="pb-2 pr-4">Carteira</th>
+              <th class="pb-2 pr-4">Ativo</th>
+              <th class="pb-2 pr-4 text-right">Target</th>
+              <th class="pb-2 pr-4 text-right">Real</th>
+              <th class="pb-2 pr-4 text-right">Desvio</th>
+              <th class="pb-2">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of summary()!.deviations; track d.portfolioId + d.assetClass) {
+              <tr class="border-t border-slate-700">
+                <td class="py-2 pr-4 text-slate-300">{{ d.portfolioName }}</td>
+                <td class="py-2 pr-4">{{ getAssetClassLabel(d.assetClass) }}</td>
+                <td class="py-2 pr-4 text-right">{{ d.targetPercent }}%</td>
+                <td class="py-2 pr-4 text-right">{{ d.realPercent }}%</td>
+                <td class="py-2 pr-4 text-right" [class.text-green-400]="!d.needsRebalance" [class.text-red-400]="d.needsRebalance">
+                  {{ d.deviation >= 0 ? '+' : '' }}{{ d.deviation }}%
+                </td>
+                <td class="py-2">
+                  @if (d.needsRebalance) {
+                    <span class="text-red-400 text-xs font-medium">Rebalancear</span>
+                  } @else {
+                    <span class="text-green-400 text-xs font-medium">OK</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  } @else {
+    <div class="bg-spectre-surface rounded border border-slate-700 p-6 mb-6">
+      <h3 class="text-sm font-medium text-slate-400 mb-2">Distribuição de Carteiras</h3>
+      <p class="text-sm text-slate-500">Crie seu primeiro portfolio de investimento para ver desvios de alocação aqui.</p>
+    </div>
+  }
+
+  @if (summary() && summary()!.recentEvents > 0) {
+    <div class="bg-spectre-surface rounded border border-slate-700 p-6 mb-6">
+      <h3 class="text-sm font-medium text-slate-400 mb-2">Atividades Recentes</h3>
+      <p class="text-sm text-slate-400">{{ summary()!.recentEvents }} eventos registrados</p>
+    </div>
+  }
+
+  @if (hasPortfolios()) {
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-sm font-semibold text-slate-300">Analytics</h3>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-slate-500">Carteira:</label>
+          <select
+            [ngModel]="currentPortfolioId()"
+            (ngModelChange)="selectPortfolio($event)"
+            class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white text-sm"
+          >
+            @for (p of portfolios(); track p.id) {
+              <option [value]="p.id">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div class="bg-spectre-surface rounded border border-slate-700 p-6">
+          <h4 class="text-sm font-medium text-slate-400 mb-4">Evolução da Alocação</h4>
+          <sp-line-chart [series]="allocationLineSeries()" [height]="200" [width]="500" />
+          @if (allocationLineSeries().length > 0) {
+            <div class="flex flex-wrap gap-2 mt-3">
+              @for (s of allocationLineSeries(); track s.label) {
+                <span class="flex items-center gap-1 text-xs text-slate-400">
+                  <span class="w-2 h-2 rounded-full inline-block" [style.background]="s.color"></span>
+                  {{ s.label }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="bg-spectre-surface rounded border border-slate-700 p-6">
+          <h4 class="text-sm font-medium text-slate-400 mb-4">Aportes Mensais</h4>
+          @if (contributionChartData().length > 0) {
+            <sp-bar-chart [items]="contributionChartData()" [currency]="true" />
+          } @else {
+            <p class="text-sm text-slate-500">Nenhum aporte registrado.</p>
+          }
+        </div>
+      </div>
+
+      @if (performance() && performance()!.totalInvested > 0) {
+        <div class="bg-spectre-surface rounded border border-slate-700 p-6">
+          <h4 class="text-sm font-medium text-slate-400 mb-4">Resumo de Performance</h4>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <span class="text-xs text-slate-500 block">Total Investido</span>
+              <span class="text-lg font-bold text-white">{{ currencyFormatter.format(performance()!.totalInvested) }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-slate-500 block">Valor Atual</span>
+              <span class="text-lg font-bold text-white">{{ currencyFormatter.format(performance()!.currentValue) }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-slate-500 block">Crescimento</span>
+              <span class="text-lg font-bold" [class.text-green-400]="performance()!.growthAmount >= 0" [class.text-red-400]="performance()!.growthAmount < 0">
+                {{ currencyFormatter.format(performance()!.growthAmount) }}
+              </span>
+            </div>
+            <div>
+              <span class="text-xs text-slate-500 block">Rentabilidade</span>
+              <span class="text-lg font-bold" [class.text-green-400]="performance()!.growthPercentage >= 0" [class.text-red-400]="performance()!.growthPercentage < 0">
+                {{ performance()!.growthPercentage >= 0 ? '+' : '' }}{{ performance()!.growthPercentage }}%
+              </span>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
 }
