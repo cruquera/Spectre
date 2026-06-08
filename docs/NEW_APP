@@ -1,0 +1,135 @@
+Act as a Principal Full-Stack Engineer and Tech Lead. We are building "BogleHub", a local-first, highly precise investment rebalancing application.
+
+### 🛠️ TECH STACK & ARCHITECTURE
+- **Monorepo Structure:** Separate `/frontend` and `/backend` folders.
+- **Frontend:** Angular (latest), TypeScript, Tailwind CSS, Angular Signals for reactivity.
+- **Backend:** Node.js (Express or Fastify), TypeScript.
+- **Database:** Prisma ORM with local SQLite (`dev.db`).
+- **Quality Assurance:** ESLint, Prettier, Jest (Backend), Karma/Jasmine or Jest (Frontend).
+
+### 📋 RULES OF ENGAGEMENT (STRICT WORKFLOW)
+You must execute this project iteratively following these Agile/DevOps principles:
+1. **Sprint Planning:** Before writing any code, output a brief plan of the current Sprint. Wait for my "go" or proceed if it's logical.
+2. **TDD & Testing:** Write unit tests for business logic (especially the math engine) and API routes. Run `npm run test` to verify them.
+3. **Linting & Clean Code:** Configure ESLint/Prettier. Run linting scripts after finishing a module and fix any warnings before moving on.
+4. **Build Verification:** Run `npm run build` for both front and back end at the end of each sprint to ensure nothing is broken.
+5. **Documentation:** After completing a Sprint, create or update a `CHANGELOG.md` or `README.md` explaining exactly what was implemented, how to run it, and the architecture decisions made.
+6. **Functional UX:** The interface must be clean, responsive, and intuitive using Tailwind. Do not leave "placeholder" broken UI.
+7. **Ask Questions:** If ANY requirement is ambiguous, STOP executing and ask me for clarification to avoid rework.
+8. **Database Architecture** I want that database tables and models/interfaces on Backend and Frontend have the same fields and rules that guarantees we have integrity between the modules
+
+---
+
+### 📉 CORE BUSINESS LOGIC & DATA SEED
+The application needs that the user defines a 'Investment Project':
+User defines the class of assets that has a relative percentage of its future wallet AND CAN(THIS IS REALLY IMPORTANT) define the subclass of asset and the relative percentage
+(Now the reference is the class of assets) of it.
+For example: The class of asset is 'Criptocurrency' and SubClass is 'Bitcoin(BTC)' ou 'Ethereum(ETH)'.
+
+Agora vou começar a falar em português, o app vai ter essa classe de ativos mapeada de forma fixa na aplicação.
+Iremos ter as seguintes opções para escolher:
+Tipo de Classe de Ativo: Renda Fixa (Brasil)
+SubTipo desta Classe de Ativo: Titulos Públicos
+Classe de Ativo: Tesouro SELIC, Tesouro IPCA+, Tesouro Prefixado, Tesouro Renda+
+
+SubTipo desta Classe de Ativo: Titulos Bancários
+Classe de Ativo: Poupança, CDB, LCI, LCA
+
+SubTipo desta Classe de Ativo: Titulos de Crédito Privado
+Classe de Ativo: Debêntures, CRI, CRA
+
+Tipo de Classe de Ativo: Renda Variável
+Bolsa de Negociação: IBOVESPA
+SubTipo desta Classe de Ativo: Ações
+Classe de Ativo: Ação(Stockpicking), ETF (Exchange Traded Funds), BDR (Brazilian Depositary Receipts), Derivativos
+
+SubTipo desta Classe de Ativo: Fundos de Investimentos
+Classe de Ativo: FIIs(Fundo de Investimento Imobiliário), Fundos de Ação, Fundos Multimercado, Fundos Cambial, Fundo de Renda Fixa.
+
+Bolsa de Negociação: NASDAQ
+SubTipo desta Classe de Ativo: Ações
+Classe de Ativo: ETF (Exchange Traded Funds)
+
+Bolsa de Negociação: LSE
+SubTipo desta Classe de Ativo: Ações
+Classe de Ativo: ETF (Exchange Traded Funds)
+
+Tipo de Classe de Ativo: Criptoativos
+
+Tipo de Classe de Ativo: Previdência Privada
+
+Tipo de Classe de Ativo: Commodities
+Classe de Ativo: Ouro, Prata, Soja, Boi Gordo.
+
+No fim de cada uma dessas opções selecionadas, devem ter dois campos denominado: 
+Descrição do Ativo e Percentual do Ativo no projeto. A soma de todos os ativos de
+um projeto de carteira DEVE dar 100% senão não podemos salvar esse projeto.
+
+Esta parte é essencial que funcione bem, perceba que os campos exibidos para as classes de ativos
+são variáveis e devem se adaptar de acordo com a opção selecionada pelo usuário, essas opções são fixas
+e podem sofrer alterações/ampliações(aqui estou falando da construção de código tá? O usuário não pode alterar essas opções)
+ao longo da evolução do nosso desenvolvimento.
+Podemos cadastrar quantos projetos quisermos tá, interprete-o como um rascunho de carteira
+de ativos de investimento.
+
+Depois de cadastrar esse projeto vamos aplicar esse projeto em uma carteira real
+denomine-a como Ledge, aqui iremos escolher um projeto de carteira e o app deve ter toda uma inteligência
+que construiremos para atingir os objetivos definidos pelo projeto de carteira.
+
+A ideia é que o APP tenha uma inteligência para SUGERIR ao usuário qual o próximo investimento
+de acordo com um valor de montante disponível para investimento(usuário irá informar isso num campo).
+O app vai calcular qual o ativo que está fora do planejamento e que precisamos comprar para rebalancear.
+Entenda que alguns ativos tem alguns limites que podem limitar o investidor à investir caso o montante seja muito baixo.
+Então por exemplo caso eu tenha 1000 reais definidos para investir, e na divisão da carteira o App interpretar que tenho 37 reais para investir numa ação stockpicking
+isso será impraticável pois não conseguimos comprar 100 ações deste ativo neste valor, então o App deve recomendar outro investimento para rebalancear a carteira.
+
+Vou definir este ponto da inteligência mais para frente, deixe com essa descrição mais branda no inicio depois vamos evoluindo melhor como vamos fazer isso.
+
+Minha ideia pessoal que vou utilizar como exemplo é a seguinte: 
+Como tenho apenas R$1500 reais mensais para investir terei que ter uma estratégia de investir por mês em blocos mais ou menos assim para ser praticável,
+mas outros usuários podem ter menos dinheiro ou mais, isso depende:
+**Bloco 1 (Internacional & Cripto):**
+- IVV (EUA S&P 500) - 25.00%
+- BTC (Bitcoin) - 20.00%
+- IWDA (Irlanda Desenvolvidos) - 17.50%
+- EIMI (Irlanda Emergentes) - 7.50%
+- USDT (Stablecoin) - 2.50%
+- ETH (Ethereum) - 1.25%
+- XMR (Monero) - 1.25%
+
+**Bloco 2 (Brasil - Defensivas):**
+- TAEE11 (2.50%), VIVT3 (2.50%), ITSA4 (2.50%), RADL3 (1.75%), ABEV3 (1.75%), ELET3 (1.25%)
+
+**Bloco 3 (Brasil - Crescimento):**
+- WEGE3 (2.50%), PETR4 (2.50%), B3SA3 (2.00%), BPAC11 (1.75%), GGBR4 (1.50%), KLBN11 (1.25%), CMIN3 (1.25%)
+
+**Rebalancing Engine Rules:**
+1. Total Portfolio Value = Sum of all `currentPosition` inputs.
+2. `currentWeight%` = (asset.currentPosition / Total Portfolio Value) * 100.
+3. `desvio%` = currentWeight% - targetWeight%.
+4. `status` = desvio% < -2.00% ? "COMPRAR" : "AGUARDAR".
+5. Allocation: Filter assets where `bloco === activeBloco` AND `status === "COMPRAR"`. Divide the "Total Capital to Invest" equally among them.
+
+---
+
+### 🚀 SPRINT ROADMAP TO EXECUTE
+
+**Sprint 1: Foundation & Backend Data Layer**
+- Init Node.js backend. Setup TypeScript, ESLint, Prettier, Jest.
+- Setup Prisma + SQLite. Create `Asset` model and aditional models necessary, also create some enums.
+- Create `/api/assets` (GET) and `/api/assets/positions` (PUT for batch updates).
+- Write backend unit tests. Run lint/test/build. Document.
+
+**Sprint 2: Frontend Foundation & UX Structure**
+- Init Angular workspace. Setup Tailwind, ESLint, Prettier.
+- Create UI Layout (Header, Control Panel for Capital Input and Bloco Dropdown).
+- Create `AssetService` to communicate with the Node API.
+- Run lint/build. Document.
+
+**Sprint 3: The Engine & Reactivity**
+- Implement Angular Signals to calculate Total Portfolio Value, current weights, desvio, and allocation amounts in real-time.
+- Build the main Data Table grouped by Asset Class, featuring conditional formatting (Green/Red badges).
+- Write Frontend unit tests for the calculation logic.
+- Run lint/test/build. Document.
+
+Please acknowledge this mandate, verify you understand the scope, and begin executing Sprint 1. Show me your console commands and file creations as you go.
